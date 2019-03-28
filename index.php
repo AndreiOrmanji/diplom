@@ -31,7 +31,7 @@
     <script>
     for (var i = 0; i < document.body.childNodes.length; i++) {
         //alert(document.body.childNodes[i]); // Text, DIV, Text, UL, ..., SCRIPT
-        document.writeln(document.body.childNodes[i]);
+        document.write(document.body.childNodes[i]);
         //document.write("</br>");
     }
     </script>

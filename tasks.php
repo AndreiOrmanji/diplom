@@ -38,17 +38,18 @@ catch(Exception $e){
 function time_counted($time_resume)
 {
     # code...
-    $current_time=time();
-    return date("H:i:s", $current_time - $time_resume);
+    //$current_time=time();
+    return date("H:i:s", time() - $time_resume);
 }
-function secConvert($seconds) {
-    $hours = floor($seconds / 3600);
-    $hms = str_pad($hours, 2, "0", STR_PAD_LEFT). ":";
-    $minutes = floor(($seconds / 60) % 60);
-    $hms .= str_pad($minutes, 2, "0", STR_PAD_LEFT). ":";
-    $seconds = $seconds % 60;
-    $hms .= str_pad($seconds, 2, "0", STR_PAD_LEFT);
-    return $hms;
+function secConvert($seconds ) {
+    $h = floor($seconds / 3600);
+    $h = str_pad($h, 1, "0", STR_PAD_LEFT);
+    $m = floor(($seconds / 60) % 60);
+    $m = str_pad($m, 2, "0", STR_PAD_LEFT);
+    $s = $seconds % 60;
+    $s = str_pad($s, 2, "0", STR_PAD_LEFT);
+    return array($h, $m, $s);
+    //'..'
 }
 ?>
 <!DOCTYPE html>
@@ -58,10 +59,10 @@ function secConvert($seconds) {
     <title>Tasks</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta http-equiv="Content-Type" content="text/html" ; charset=utf-8">
+    <meta http-equiv="Content-Type" content="text/html" ; charset="utf-8">
 </head>
 
-<body>
+<body onload="init()">
     <a href="./">Main Page</a><br>
     <? if($_SESSION["email"]) : ?>
     <?="You are using, ". $_SESSION["email"] . " as your e-mail adress."; ?>
@@ -112,7 +113,8 @@ function secConvert($seconds) {
     </div>
     <?php 
     $zzz = time();
-    echo "$zzz";
+    echo "$zzz<br/>";
+    echo date("H:i:s", time());
     $user_tasks = R::find( 'tasks', ' user_id = ? ',  [$_SESSION['id']]);
     if(empty($user_tasks)) echo "No tasks were created.";
         else{
@@ -127,6 +129,7 @@ function secConvert($seconds) {
                                 <th>Status</th>
                                 <th>Time used</th>
                                 <th>Time resume</th>
+                                <th>Control</th>
                             </tr>
                         </thead>
                         <tbody>';
@@ -139,13 +142,15 @@ function secConvert($seconds) {
                     $status="Stopped";
                     $time_c=$t['time_counted'];
                 }//date("H:i:s", time()-$t['time_resume']).'</td>secConvert($zzz-$t['time_resume'])    date("d.m.Y H:i:s",$t['time_resume'])
+
                 echo '<tr>
                     <td>'.$t['prname'].'</td>
                     <td>'.$t['tname'].'</td>
-                    <td>'.$t['tdesc'].'натикало:'.secConvert($zzz-$t['time_resume']).'</td>
-                    <td>'.$status.'</td>
-                    <td>'.$time_c.'</td>
+                    <td>'.$t['tdesc'].'</td>
+                    <td>'.$status.'</td> 
+                    <td><span class="tasks_time" id="task_id_'.$t["id"].'">'.secConvert(time()-$t['time_resume'])[0].':'.secConvert(time()-$t['time_resume'])[1].':'.secConvert(time()-$t['time_resume'])[2].'</span></td>
                     <td>'.$t['time_resume'].'</td>
+                    <td><button name="button'.$t["id"].'" type="button" class="btn btn-info btn-sm" onclick="ss()">Open!</button></td>
                     </tr>';
             }
             echo        '</tbody>
@@ -153,34 +158,8 @@ function secConvert($seconds) {
                 </div>' ;
         }
     ?>
-    <!-- <form action="test.php" method="GET" onsubmit="return false;">
-    <div>
-        <input type="text" name="text1" id="text1" onkeyup="f_up();"><br>
-        <button id="button1">Start
-            <button id="button1">Stop
-                <!--span id="span1" style="color: red">
-                    <span style="text-decoration: underline">Т</span>екст красного цвета</span
-    </button>
-    </div>
-    </form> 
-    <div>Осталось <span id="timer"></span> секунд</div>
     <? else : ?>
     <?="You are not autorized. Go to <a href=\"./login\">Login Page.</a> ";?>
-    <div>You'll be redirected to the main page after
-        <span id="timer"></span> seconds. If it didn't happend, press <a href="./login">Login Page</a> link.</div>
-    <script type="text/javascript">
-    var t = 2; /* Даём 2 секунды */
-    function refr_time() {
-        if (t > 0) {
-            t--;
-            document.getElementById('timer').innerHTML = t;
-        } else {
-            clearInterval(tm);
-            location.href = '/';
-        }
-    }
-    var tm = setInterval('refr_time();', 1000);
-    --> -->
     </script>
     <? endif; ?>
     <!-- Optional JavaScript -->
@@ -191,6 +170,56 @@ function secConvert($seconds) {
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+    <!--
+
+    function hmsToSec(hmsString) {
+        // body...
+        var q = hmsString.split(':'); // split it at the colons
+        var seconds = (+q[0]) * 60 * 60 + (+q[1]) * 60 + (+q[2]);
+    }
+    var t = 1; /* Даём 2 секунды */
+    function timer(string) {
+        // body...
+        var a = string.split(':');
+        //alert(a);
+        a[2] = Number(a[2]);
+        a[1] = Number(a[1]);
+        a[0] = Number(a[0]);
+        if (a[2] >= 59) {
+            a[2] = 0;
+            if (a[1] >= 59) {
+                a[1] = 0;
+                a[0]++;
+            } else { a[1]++; }
+        } else { a[2] += 1; }
+        //alert(a);
+        a[2] = ((a[2] < 10) ? "0" : "") + a[2];
+        a[1] = ((a[1] < 10) ? "0" : "") + a[1];
+        a[0] = (a[0] == 0) ? "0" : a[0];
+        var b = a[0] + ":" + a[1] + ":" + a[2];
+        return b;
+    }
+
+    function tick() {
+        // body...
+        var elements = document.getElementsByClassName("tasks_time");
+        for (var i = 0; i < elements.length; i++) {
+            elements[i].innerHTML = timer(elements[i].innerHTML);
+        }
+    }
+
+    function init() {
+        var t = setInterval("tick()", 1000);
+    }
+    //clearInterval(tm);
+    function ss() {
+        // body...
+        clearInterval(t);
+    }
+
+    -->
+    </script>
 </body>
 
 </html>
