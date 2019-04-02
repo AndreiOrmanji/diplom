@@ -1,43 +1,5 @@
 <?php
 require_once 'db.php';
-try{
-    ob_start();
-    if ( isset($_POST['submit']) ) {
-        //echo '<pre>'.var_dump($_POST['submit']).'</pre>';
-        $task = R::dispense ('tasks');
-        $task->prName = (empty($_POST['prname']))?'Others tasks':$_POST['prname'];    //project name
-        $task->tName = $_POST['tname'];                                         //task name
-        $task->tDesc = $_POST['tdesc'];                                         //description
-        $task->userId = $_SESSION['id'];                                        //user id
-        $task->tCreated=time();                                                 //task created
-        $task->tFinished=NULL;                                                  //task finished
-        $task->tPaused=NULL;
-        $task->timeCounted = 0;                                                 //time already counted
-
-        if (isset($_POST['check'])) {
-            $task->status = 1; //task is running
-            $task->tResumed = time();
-        }
-        else{
-            $task->status = 0; //task is stopped
-            $task->tResumed = NULL;
-        }
-        R::store( $task );
-        //echo '<meta http-equiv="Refresh" content="2; url=./tasks">';
-        //echo '';
-        header("Location: ./tasks");
-        exit;
-        // foreach($_POST as $key => $value){
-        //     $_POST[$key]='';
-        // }        
-        //var_dump($task);
-    }
-}
-catch(Exception $e){
-    echo '<div style = "color:red;">'."Task failed!".'</div><hr>';
-    var_dump($task);
-    echo "$e";
-}
 
 function time_counted($timeCounted)
 {
@@ -67,8 +29,8 @@ function secConvert($seconds) {
     $m = str_pad($m, 2, "0", STR_PAD_LEFT);
     $s = $seconds % 60;
     $s = str_pad($s, 2, "0", STR_PAD_LEFT);
-    //return array($h, $m, $s);
     return $h.':'.$m.':'.$s;
+    //return array($h, $m, $s);
     //
 }
 ?>
@@ -84,6 +46,7 @@ function secConvert($seconds) {
 
 <body onload="init()">
     <a href="./">Main Page</a><br>
+    <?php ?>
     <? if($_SESSION["email"]) : ?>
     <?="You are using, ". $_SESSION["email"] . " as your e-mail adress."; ?>
     <div class="container">
@@ -106,7 +69,7 @@ function secConvert($seconds) {
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form id="contactForm" action="./tasks" method="post">
+                    <form id="contactForm" action="./services/addTask" method="post">
                         <div class="form-group">
                             <label for="prname">ProjectName:</label>
                             <input id="prname" class="form-control" name="prname" type="text" placeholder="Project name" value="">
@@ -140,7 +103,7 @@ function secConvert($seconds) {
     if(empty($user_tasks)) echo "No tasks were created.";
         else{
             echo '<div class="container">
-                    <h6>Current tasks of user @'.$_SESSION['email'].'</h6>
+                    <h6>Current tasks of user <strong><i>'.$_SESSION['email'].',</i></strong></h6>
                     <table class="table">    
                         <thead>
                             <tr>
@@ -155,14 +118,21 @@ function secConvert($seconds) {
                         </thead>
                         <tbody>';
             foreach ($user_tasks as $t) {
-                if ($t['status']==1) {
-                    $status="Running";
-                    $time_c=time_counted($t['tResumed'])+$t['time_counted'];
+                switch ($t['status']) {
+                    case '1':
+                        # code...
+                        $status="Running";
+                        break;
+                    
+                    case '0':
+                        # code...
+                        $status="Stopped";
+                        break;
+                    default:
+                        $status="Finished";
+                        break;
                 }
-                else{
-                    $status="Stopped";
-                    $time_c=$t['time_counted'];
-                }//date("H:i:s", time()-$t['time_resume']).'</td>secConvert($zzz-$t['time_resume'])    date("d.m.Y H:i:s",$t['time_resume'])
+                //date("H:i:s", time()-$t['time_resume']).'</td>secConvert($zzz-$t['time_resume'])    date("d.m.Y H:i:s",$t['time_resume'])
                 //.secConvert(time()-$t['time_resume'])[0].':'.secConvert(time()-$t['time_resume'])[1].':'.secConvert(time()-$t['time_resume'])[2].
 
                 echo'<tr>
@@ -172,16 +142,18 @@ function secConvert($seconds) {
                     <td class="tasks_status">'.$status.'</td> 
                     <td class="tasks_time" id="task_id_'.$t["id"].'">'.secConvert($t['timeCounted']).'</td>
                     <td>'.time_resumed($t['TResumed']).'</td>
-                    <td><button name="startButton'.$t["id"].'" type="button" class="ctrl_btn btn btn-info btn-sm">Continue</button></td>
-                    <td><button name="finishButton'.$t["id"].'" type="button" class="end_btn btn btn-info btn-sm">Finish</button></td>
+                    <td><div class="btn-group">
+                        <button name="startButton'.$t["id"].'" type="button" class="ctrl_btn btn btn-info btn-sm">Continue</button>
+                        <button name="finishButton'.$t["id"].'" type="button" class="end_btn btn btn-secondary btn-sm">Finish</button>
+                    </div></td>
                     </tr>';
             }
             echo        '</tbody>
                     </table>' ;
         }
         echo'<div>
-                <button id="stopButton" name="stopButton" type="button" class="btn btn-danger btn-lg" style="display:none;" onclick="stopTasks();">Stop</button>
-                <button name="stopResponseButton" type="button" class="btn btn-warning btn-lg" <!--onclick="stopIntervalResponse();"-->>Stop response</button></td></div>
+                <button name="stopResponseButton" type="button" class="btn btn-warning btn-lg" 
+                <!--onclick="stopIntervalResponse();"-->>Stop response</button></td>
             </div>';
     ?>
     <? else : ?>
@@ -234,7 +206,6 @@ function secConvert($seconds) {
 
     function init() {
         let ctrlBtns = document.getElementsByClassName("ctrl_btn");
-        let timers = document.getElementsByClassName("tasks_time");
         for (let i = 0; i < ctrlBtns.length; i++) {
             ctrlBtns[i].addEventListener('click', () => {
                 try {
@@ -253,25 +224,41 @@ function secConvert($seconds) {
                 }
             });
         }
+        let endBtns = document.getElementsByClassName("end_btn");
+        for (let i = 0; i < endBtns.length; i++) {
+            endBtns[i].addEventListener('click', () => {
+                try {
+                    let status = document.getElementsByClassName('tasks_status');
+                    status[i].innerHTML = "Finished";
+                    endBtns[i].style.display = 'none';
+
+                    let ctrlBtns = document.getElementsByClassName("ctrl_btn");
+                    console.log(ctrlBtns[i]);
+                    ctrlBtns[i].style.display = 'none';
+                } catch (e) {
+                    console.log(e);
+                }
+            });
+        }
     }
-    var noActiveTasks = <?php if(empty($user_tasks)) echo "true"; else echo "false"; ?>
+    //var noActiveTasks = <?php if(empty($user_tasks)) echo "true"; else echo "false"; ?>
 
 
     var timeInterval = setInterval(() => {
         let status = document.getElementsByClassName('tasks_status');
         let timers = document.getElementsByClassName("tasks_time");
-        let activeTasks = 0;
+        //let activeTasks = 0;
         for (var i = 0; i < status.length; i++) {
             if (status[i].innerHTML == "Running") {
-                activeTasks++;
+                //activeTasks++;
                 timers[i].innerHTML = timer(timers[i].innerHTML);
             }
         }
-        if ((activeTasks === 0) || (noActiveTasks)) {
-            document.getElementById('stopButton').style.display = 'none';
-        } else {
-            document.getElementById('stopButton').style.display = 'inline';
-        }
+        // if ((activeTasks === 0) || (noActiveTasks)) {
+        //     document.getElementById('stopButton').style.display = 'none';
+        // } else {
+        //     document.getElementById('stopButton').style.display = 'inline';
+        // }
     }, 1000);
     // var responseInterval = setInterval(() => {
     // $.ajax({
