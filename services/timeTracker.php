@@ -2,12 +2,13 @@
 echo "test2 response from timeTracker.php";
 
 $data = json_decode(stripslashes($_POST['data']));
-	$data[0][0] = ;
+	$data[0][0] = ; //
   // here i would like use foreach:
 
   foreach($data as $d){
      echo $d;
   }
+  echo""
 
 
 $task = R::findOne( 'tasks', ' id = ? ',  array($_POST['id']));

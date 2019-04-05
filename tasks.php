@@ -174,14 +174,15 @@ function secConvert($seconds) {
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <script type="text/javascript">
     <!--
-    function currentTime() {
+    function currentTime(info) {
         // body...
         let currentDate = new Date();
+        let now = Date.now();
         let date = currentDate.getDate();
         if (date < 10) { date = '0' + date; }
         let month = currentDate.getMonth() + 1; //Be careful! January is 0 not 1
         if (month < 10) { month = '0' + month; }
-        return dateString = currentDate.toTimeString().substring(0, 8) + " " + date + "." + month + "." + currentDate.getFullYear();
+        return dateString = '<span class="' + info + '" style="display: none">' + (((now - now % 1000) / 1000) - 1) + "</span>" + currentDate.toTimeString().substring(0, 8) + " " + date + "." + month + "." + currentDate.getFullYear();
     }
 
     function hmsToSec(hmsString) {
@@ -195,9 +196,7 @@ function secConvert($seconds) {
         //a[2] - sec
         //a[1] - min
         //a[0] - hrs
-        //console.log(string);
         var a = string.split(':');
-        //alert(a);
         a[2] = Number(a[2]);
         a[1] = Number(a[1]);
         a[0] = Number(a[0]);
@@ -211,12 +210,8 @@ function secConvert($seconds) {
         a[2] = ((a[2] < 10) ? "0" : "") + a[2];
         a[1] = ((a[1] < 10) ? "0" : "") + a[1];
         a[0] = (a[0] == 0) ? "0" : a[0];
-        var b = a[0] + ":" + a[1] + ":" + a[2];
-        return b;
+        return a[0] + ":" + a[1] + ":" + a[2];
     }
-
-    let counters = [];
-    let intervals = [];
 
     function init() {
         let ctrlBtns = document.getElementsByClassName("ctrl_btn");
@@ -232,19 +227,25 @@ function secConvert($seconds) {
                     let status = document.getElementsByClassName('tasks_status');
                     let tResumed = document.getElementsByClassName('task_resumed');
                     let tPaused = document.getElementsByClassName('task_paused');
-                    if (ctrlBtns[i].innerHTML === "Continue") { //task is paused
-                        for (let j = 0; j < status.length; j++) { //status review
-                            if (i === j) continue; //if task to resume is chosen, skip it
+                    //if task is paused
+                    if (ctrlBtns[i].innerHTML === "Continue") {
+                        //status review
+                        for (let j = 0; j < status.length; j++) {
+                            //if task to resume is chosen, skip it
+                            if (i === j) continue;
                             else {
-                                if (status[j].innerHTML !== 'Finished') { //else if status is not finished 
-                                    status[j].innerHTML = 'Paused'; //change status of other tasks to Paused
+                                //else if status is not finished 
+                                if (status[j].innerHTML === 'Running') {
+                                    //change status of other tasks to Paused and save timestamps
+                                    tPaused[j].innerHTML = currentTime("paused_timestamp");
+                                    status[j].innerHTML = 'Paused';
                                     ctrlBtns[j].innerHTML = 'Continue';
                                 }
                             }
                         }
                         ctrlBtns[i].innerHTML = "Pause";
                         status[i].innerHTML = "Running";
-                        tResumed[i].innerHTML = currentTime();
+                        tResumed[i].innerHTML = currentTime("resumed_timestamp");
                         for (let i = 0; i < status.length; i++) {
                             if (status[i].innerHTML === "Running") {
                                 ctrlBtns[i].innerHTML = "Pause";
@@ -255,7 +256,7 @@ function secConvert($seconds) {
                         //clearInterval(timeInterval);
                         ctrlBtns[i].innerHTML = "Continue";
                         status[i].innerHTML = "Paused";
-                        tPaused[i].innerHTML = currentTime();
+                        tPaused[i].innerHTML = currentTime("paused_timestamp");
                     }
                 } catch (e) {
                     console.log(e);
@@ -269,7 +270,7 @@ function secConvert($seconds) {
                     let status = document.getElementsByClassName('tasks_status');
                     let ctrlBtns = document.getElementsByClassName("ctrl_btn");
                     let tFinished = document.getElementsByClassName('task_finished');
-                    tFinished[i].innerHTML = currentTime();
+                    tFinished[i].innerHTML = currentTime("finished_timestamp");
                     status[i].innerHTML = "Finished";
                     endBtns[i].style.display = 'none';
                     ctrlBtns[i].style.display = 'none';

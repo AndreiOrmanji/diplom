@@ -10,7 +10,7 @@ try{
         $task->tName = $_POST['tname'];                                         //task name
         $task->tDesc = $_POST['tdesc'];                                         //description
         $task->tCreated=time();  
-                                                       //task created
+                                                                                //task created
         $task->tFinished=NULL;                                                  //task finished
         $task->tPaused=NULL;
         $task->timeCounted = 0;                                                 //time already counted
