@@ -5,12 +5,12 @@ try{
     if ( isset($_POST['submit']) ) {
         //echo '<pre>'.var_dump($_POST['submit']).'</pre>';
         $task = R::dispense ('tasks');
-        $task->userId = $_SESSION["id"];
-        $task->prName = (empty($_POST['prname']))?'Others tasks':$_POST['prname'];    //project name
+        $task->userId = $_SESSION["id"];                                        //user id
+        $task->prName = (empty($_POST['prname'])) ? 'Others tasks' : $_POST['prname'];    //project name
         $task->tName = $_POST['tname'];                                         //task name
         $task->tDesc = $_POST['tdesc'];                                         //description
-        $task->userId = $_SESSION['id'];                                        //user id
-        $task->tCreated=time();                                                 //task created
+        $task->tCreated=time();  
+                                                       //task created
         $task->tFinished=NULL;                                                  //task finished
         $task->tPaused=NULL;
         $task->timeCounted = 0;                                                 //time already counted

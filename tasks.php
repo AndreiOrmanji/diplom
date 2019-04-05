@@ -8,16 +8,16 @@ function time_counted($timeCounted)
     return date("r", $timeCounted);
 }
 
-function time_resumed($tResumed)
+function current_time($tResumed)
 {
     # code...
     //$current_time=time();
     if (($tResumed===NULL)|| ($tResumed===0)) {
         # code...
-        return "Not started yet";
+        return "-----";
     } else {
         # code...
-        return date("l jS \of F Y H:i:s", $tResumed);
+        return date("H:i:s d.m.Y", $tResumed);
     }
     
 }
@@ -96,9 +96,9 @@ function secConvert($seconds) {
         </div>
     </div>
     <?php 
-    $zzz = time();
-    echo "$zzz<br/>";
-    echo date("H:i:s", time());
+    //$zzz = time();
+    echo time();
+    echo '<div>Current Time:<span class="current_time"> '.date("H:i:s", time()).'</span></div>';
     $user_tasks = R::find( 'tasks', ' user_id = ? ',  [$_SESSION['id']]);
     if(empty($user_tasks)) echo "No tasks were created.";
         else{
@@ -113,6 +113,8 @@ function secConvert($seconds) {
                                 <th>Status</th>
                                 <th>Time used</th>
                                 <th>Time resumed</th>
+                                <th>Time paused</th>
+                                <th>Time finished</th>
                                 <th>Control</th>
                             </tr>
                         </thead>
@@ -126,7 +128,7 @@ function secConvert($seconds) {
                     
                     case '0':
                         # code...
-                        $status="Stopped";
+                        $status="Paused";
                         break;
                     default:
                         $status="Finished";
@@ -140,8 +142,10 @@ function secConvert($seconds) {
                     <td>'.$t['tName'].'</td>
                     <td>'.$t['tDesc'].'</td>
                     <td class="tasks_status">'.$status.'</td> 
-                    <td class="tasks_time" id="task_id_'.$t["id"].'">'.secConvert($t['timeCounted']).'</td>
-                    <td>'.time_resumed($t['TResumed']).'</td>
+                    <td class="tasks_time">'.secConvert($t['timeCounted']).'</td>
+                    <td class="task_resumed">'.current_time($t['tResumed']).'</td>
+                    <td class="task_paused">'.current_time($t['tPaused']).'</td>
+                    <td class="task_finished">'.current_time($t['tFinished']).'</td>
                     <td><div class="btn-group">
                         <button name="startButton'.$t["id"].'" type="button" class="ctrl_btn btn btn-info btn-sm">Continue</button>
                         <button name="finishButton'.$t["id"].'" type="button" class="end_btn btn btn-secondary btn-sm">Finish</button>
@@ -151,10 +155,10 @@ function secConvert($seconds) {
             echo        '</tbody>
                     </table>' ;
         }
-        echo'<div>
-                <button name="stopResponseButton" type="button" class="btn btn-warning btn-lg" 
-                <!--onclick="stopIntervalResponse();"-->>Stop response</button></td>
-            </div>';
+        // echo'<div>
+        //         <button name="stopResponseButton" type="button" class="btn btn-warning btn-lg" 
+        //         <!--onclick="stopIntervalResponse();"-->>Stop response</button></td>
+        //     </div>';
     ?>
     <? else : ?>
     <?="You are not autorized. Go to <a href=\"./login\">Login Page.</a> ";?>
@@ -170,6 +174,16 @@ function secConvert($seconds) {
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <script type="text/javascript">
     <!--
+    function currentTime() {
+        // body...
+        let currentDate = new Date();
+        let date = currentDate.getDate();
+        if (date < 10) { date = '0' + date; }
+        let month = currentDate.getMonth() + 1; //Be careful! January is 0 not 1
+        if (month < 10) { month = '0' + month; }
+        return dateString = currentDate.toTimeString().substring(0, 8) + " " + date + "." + month + "." + currentDate.getFullYear();
+    }
+
     function hmsToSec(hmsString) {
         // body...
         var q = hmsString.split(':'); // split it at the colons
@@ -206,18 +220,42 @@ function secConvert($seconds) {
 
     function init() {
         let ctrlBtns = document.getElementsByClassName("ctrl_btn");
+        let status = document.getElementsByClassName('tasks_status');
+        for (var i = 0; i < status.length; i++) {
+            if (status[i].innerHTML === "Running") {
+                ctrlBtns[i].innerHTML = "Pause";
+            }
+        }
         for (let i = 0; i < ctrlBtns.length; i++) {
             ctrlBtns[i].addEventListener('click', () => {
                 try {
-                    if (ctrlBtns[i].innerHTML === "Continue") {
-                        ctrlBtns[i].innerHTML = "Stop";
-
-                        let status = document.getElementsByClassName('tasks_status');
+                    let status = document.getElementsByClassName('tasks_status');
+                    let tResumed = document.getElementsByClassName('task_resumed');
+                    let tPaused = document.getElementsByClassName('task_paused');
+                    if (ctrlBtns[i].innerHTML === "Continue") { //task is paused
+                        for (let j = 0; j < status.length; j++) { //status review
+                            if (i === j) continue; //if task to resume is chosen, skip it
+                            else {
+                                if (status[j].innerHTML !== 'Finished') { //else if status is not finished 
+                                    status[j].innerHTML = 'Paused'; //change status of other tasks to Paused
+                                    ctrlBtns[j].innerHTML = 'Continue';
+                                }
+                            }
+                        }
+                        ctrlBtns[i].innerHTML = "Pause";
                         status[i].innerHTML = "Running";
+                        tResumed[i].innerHTML = currentTime();
+                        for (let i = 0; i < status.length; i++) {
+                            if (status[i].innerHTML === "Running") {
+                                ctrlBtns[i].innerHTML = "Pause";
+                            }
+                        }
+
                     } else {
+                        //clearInterval(timeInterval);
                         ctrlBtns[i].innerHTML = "Continue";
-                        let status = document.getElementsByClassName('tasks_status');
-                        status[i].innerHTML = "Stopped";
+                        status[i].innerHTML = "Paused";
+                        tPaused[i].innerHTML = currentTime();
                     }
                 } catch (e) {
                     console.log(e);
@@ -229,11 +267,11 @@ function secConvert($seconds) {
             endBtns[i].addEventListener('click', () => {
                 try {
                     let status = document.getElementsByClassName('tasks_status');
+                    let ctrlBtns = document.getElementsByClassName("ctrl_btn");
+                    let tFinished = document.getElementsByClassName('task_finished');
+                    tFinished[i].innerHTML = currentTime();
                     status[i].innerHTML = "Finished";
                     endBtns[i].style.display = 'none';
-
-                    let ctrlBtns = document.getElementsByClassName("ctrl_btn");
-                    console.log(ctrlBtns[i]);
                     ctrlBtns[i].style.display = 'none';
                 } catch (e) {
                     console.log(e);
@@ -243,22 +281,29 @@ function secConvert($seconds) {
     }
     //var noActiveTasks = <?php if(empty($user_tasks)) echo "true"; else echo "false"; ?>
 
-
     var timeInterval = setInterval(() => {
         let status = document.getElementsByClassName('tasks_status');
         let timers = document.getElementsByClassName("tasks_time");
+        let ctrlBtns = document.getElementsByClassName("ctrl_btn");
         //let activeTasks = 0;
+
         for (var i = 0; i < status.length; i++) {
-            if (status[i].innerHTML == "Running") {
+            if (status[i].innerHTML === "Running") {
                 //activeTasks++;
                 timers[i].innerHTML = timer(timers[i].innerHTML);
+
             }
         }
         // if ((activeTasks === 0) || (noActiveTasks)) {
-        //     document.getElementById('stopButton').style.display = 'none';
+        //     document.getElementById('pauseButton').style.display = 'none';
         // } else {
-        //     document.getElementById('stopButton').style.display = 'inline';
+        //     document.getElementById('pauseButton').style.display = 'inline';
         // }
+    }, 1000);
+
+    var currentTimeInterval = setInterval(() => {
+        let currentTime = document.getElementsByClassName("current_time");
+        currentTime[0].innerHTML = timer(currentTime[0].innerHTML);
     }, 1000);
     // var responseInterval = setInterval(() => {
     // $.ajax({
@@ -271,11 +316,11 @@ function secConvert($seconds) {
     // });
     // }, 1000);
 
-    function stopTasks() {
+    function pauseTasks() {
         let status = document.getElementsByClassName("tasks_status");
         let ctrlBtns = document.getElementsByClassName("ctrl_btn");
         for (i = 0; i < status.length; i++) {
-            status[i].innerHTML = "Stopped";
+            status[i].innerHTML = "Paused";
             ctrlBtns[i].innerHTML = "Continue";
             //     if (ctrlBtns[i].classList.contains('btn-warning')){
             // ctrlBtns[i].classList.remove('btn-warning');

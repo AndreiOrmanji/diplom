@@ -1,6 +1,47 @@
 <?php
 echo "test2 response from timeTracker.php";
 
+$data = json_decode(stripslashes($_POST['data']));
+	$data[0][0] = ;
+  // here i would like use foreach:
+
+  foreach($data as $d){
+     echo $d;
+  }
+
+
+$task = R::findOne( 'tasks', ' id = ? ',  array($_POST['id']));
+if ( isset($_POST['submit']) ) {
+        //echo '<pre>'.var_dump($_POST['submit']).'</pre>';
+        $task = R::dispense ('tasks');
+        $task->userId = $_SESSION["id"];
+        $task->prName = (empty($_POST['prname']))?'Others tasks':$_POST['prname'];    //project name
+        $task->tName = $_POST['tname'];                                         //task name
+        $task->tDesc = $_POST['tdesc'];                                         //description
+        $task->userId = $_SESSION['id'];                                        //user id
+        $task->tCreated=time();                                                 //task created
+        $task->tFinished=NULL;                                                  //task finished
+        $task->tPaused=NULL;
+        $task->timeCounted = 0;                                                 //time already counted
+
+        if (isset($_POST['check'])) {
+            $task->status = 1; //task is running
+            $task->tResumed = time();
+        }
+        else{
+            $task->status = 0; //task is stopped
+            $task->tResumed = NULL;
+        }
+        R::store( $task );
+        //echo '<meta http-equiv="Refresh" content="2; url=./tasks">';
+        //echo '';
+        header("Location: ../tasks");
+        exit;
+        // foreach($_POST as $key => $value){
+        //     $_POST[$key]='';
+        // }        
+        //var_dump($task);
+    }
 
 /*
 var arr=[23,42,4,16,8,15];
@@ -27,7 +68,7 @@ for (let i=1;i<arr.length-1;i++){
 }
 console.log(arr);
 console.log(ctr);
-
+https://youtu.be/1IuUR7iy5iU
 
 
 https://vk.com/id234812677
