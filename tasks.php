@@ -48,7 +48,7 @@ function secConvert($seconds) {
     <a href="./">Main Page</a><br>
     <?php ?>
     <? if($_SESSION["email"]) : ?>
-    <?="You are using, ". $_SESSION["email"] . " as your e-mail adress."; ?>
+    <?="You are using, ". $_SESSION["email"] . " as your e-mail adress.";?>
     <div class="container">
         <div class="my-5 mx-auto text-center">
             <!--<button class="btn btn-dark btn-lg" data-toggle="modal" data-target="#exampleModal">Открыть модальное окно</button>-->
@@ -114,6 +114,7 @@ function secConvert($seconds) {
                                 <th>Time used</th>
                                 <th>Time resumed</th>
                                 <th>Time paused</th>
+                                <th>Time created</th>
                                 <th>Time finished</th>
                                 <th>Control</th>
                             </tr>
@@ -136,24 +137,41 @@ function secConvert($seconds) {
                 }
                 //date("H:i:s", time()-$t['time_resume']).'</td>secConvert($zzz-$t['time_resume'])    date("d.m.Y H:i:s",$t['time_resume'])
                 //.secConvert(time()-$t['time_resume'])[0].':'.secConvert(time()-$t['time_resume'])[1].':'.secConvert(time()-$t['time_resume'])[2].
-
+                //<span class="status_code" style="display: none">'.$t['status'].'</span>
+//<td class="task_created">'.current_time($t['tCreated']).'</td>
                 echo'<tr>
-                    <td>'.$t['prName'].'</td>
-                    <td>'.$t['tName'].'</td>
-                    <td>'.$t['tDesc'].'</td>
-                    <td class="tasks_status">'.$status.'</td> 
-                    <td class="tasks_time">'.secConvert($t['timeCounted']).'</td>
-                    <td class="task_resumed">'.current_time($t['tResumed']).'</td>
-                    <td class="task_paused">'.current_time($t['tPaused']).'</td>
-                    <td class="task_finished">'.current_time($t['tFinished']).'</td>
+                    <td class="project_name">'.$t['prName'].'</td>
+                    <td class="task_name">'.$t['tName'].'</td>
+                    <td class="task_desc">'.$t['tDesc'].'</td>
+                    <td><span class="tasks_status">'.$status.'</span><span class="status_code" style="display: none">'.$t['status'].'</span></td> 
+                    <td><span class="tasks_time">'.secConvert($t['timeCounted']).'</span><span class="time_counted_sec" style="display: none">'.$t['timeCounted'].'</span></td>
+                    <td class="task_resumed"><span class="resumed_timestamp" style="display: none">'.$t['tResumed'].'</span>'.current_time($t['tResumed']).'</td>
+                    <td class="task_paused"><span class="paused_timestamp" style="display: none">'.$t['tPaused'].'</span>'.current_time($t['tPaused']).'</td>
+                    <td class="task_created"><span class="created_timestamp" style="display: none">'.$t['tCreated'].'</span>'.current_time($t['tCreated']).'</td>
+                    <td class="task_finished"><span class="finished_timestamp" style="display: none">'.$t['tFinished'].'</span>'.current_time($t['tFinished']).'</td>
                     <td><div class="btn-group">
-                        <button name="startButton'.$t["id"].'" type="button" class="ctrl_btn btn btn-info btn-sm">Continue</button>
-                        <button name="finishButton'.$t["id"].'" type="button" class="end_btn btn btn-secondary btn-sm">Finish</button>
+                        <button name="startButton'.$t["id"].'" type="button" class="ctrl_btn modify-btn btn btn-info btn-sm">Continue</button>
+                        <button name="finishButton'.$t["id"].'" type="button" class="end_btn modify-btn btn btn-secondary btn-sm">Finish</button>
                     </div></td>
                     </tr>';
             }
             echo        '</tbody>
                     </table>' ;
+            // echo '<table class="table-hidden" style="display:none">
+    // <tbody>';
+        // foreach ($user_tasks as $t) {
+        // echo '<tr>
+            // <td class="time_counted_sec">'.$t['timeCounted'].'</td>
+            // <td class="resumed_timestamp"></td>
+            // <td class="paused_timestamp"></td>
+            // <td class="created_timestamp">'.$t['tCreated'].'</td>
+            // <td class="finished_timestamp"></td>
+            // <td class="status_code"></td>
+            // </tr>';
+        // }
+        // echo'</tbody>
+    // </table>' ;
+
         }
         // echo'<div>
         //         <button name="stopResponseButton" type="button" class="btn btn-warning btn-lg" 
@@ -174,6 +192,7 @@ function secConvert($seconds) {
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <script type="text/javascript">
     <!--
+
     function currentTime(info) {
         // body...
         let currentDate = new Date();
@@ -182,7 +201,7 @@ function secConvert($seconds) {
         if (date < 10) { date = '0' + date; }
         let month = currentDate.getMonth() + 1; //Be careful! January is 0 not 1
         if (month < 10) { month = '0' + month; }
-        return dateString = '<span class="' + info + '" style="display: none">' + (((now - now % 1000) / 1000) - 1) + "</span>" + currentDate.toTimeString().substring(0, 8) + " " + date + "." + month + "." + currentDate.getFullYear();
+        return '<span class="' + info + '" style="display: none">' + (((now - now % 1000) / 1000) - 1) + "</span>" + currentDate.toTimeString().substring(0, 8) + " " + date + "." + month + "." + currentDate.getFullYear();
     }
 
     function hmsToSec(hmsString) {
@@ -190,6 +209,61 @@ function secConvert($seconds) {
         var q = hmsString.split(':'); // split it at the colons
         var seconds = (+q[0]) * 60 * 60 + (+q[1]) * 60 + (+q[2]);
     }
+
+    function timeToSec(i) {
+        //counts time_used in secs for easy synchronization
+        let timeCounted = document.getElementsByClassName('time_counted_sec');
+        timeCounted[i].innerHTML = Number(timeCounted[i].innerHTML) + 1;
+    }
+
+    // function toPause(i) {
+    //     // body...
+    //     tPaused[i].innerHTML = currentTime("paused_timestamp");
+    //     status[i].innerHTML = 'Paused';
+    //     ctrlBtns[i].innerHTML = 'Continue';
+    // }
+
+    function convertToSync() {
+        // body...
+        let userId = Number(<?php echo $_SESSION['id']; ?>);
+        let prName = document.getElementsByClassName("project_name");
+        let tName = document.getElementsByClassName("task_name");
+        let tDesc = document.getElementsByClassName("task_desc");
+        let tStatus = document.getElementsByClassName("tasks_status");
+        let timeCounted = document.getElementsByClassName("time_counted_sec");
+        let tCreated = document.getElementsByClassName("task_created");
+        let tFinished = document.getElementsByClassName("finished_timestamp")
+        let tPaused = document.getElementsByClassName("paused_timestamp");
+        let tResumed = document.getElementsByClassName("resumed_timestamp");
+
+
+    }
+
+    function convertStatus(i) {
+        // body...
+        let statusMark = document.getElementsByClassName('tasks_status');
+        let statusCode = document.getElementsByClassName('status_code');
+        console.log(statusMark[i].innerHTML);
+        switch (statusMark[i].innerHTML) {
+            case 'Running':
+                {
+                    statusCode[i].innerHTML = 1;
+                    break;
+                }
+            case 'Paused':
+                {
+                    statusCode[i].innerHTML = 0;
+                    break;
+                }
+            case 'Finished':
+                {
+                    statusCode[i].innerHTML = 2;
+                    console.log(statusCode[i]);
+                    break;
+                }
+        }
+    }
+
 
     function timer(string) {
         // body...
@@ -214,13 +288,39 @@ function secConvert($seconds) {
     }
 
     function init() {
+
         let ctrlBtns = document.getElementsByClassName("ctrl_btn");
         let status = document.getElementsByClassName('tasks_status');
-        for (var i = 0; i < status.length; i++) {
+        //change button label for Start/Pause button from Continue to Pause if task is running
+        for (let i = 0; i < status.length; i++) {
             if (status[i].innerHTML === "Running") {
                 ctrlBtns[i].innerHTML = "Pause";
             }
         }
+        try {
+            let sButton = document.getElementsByClassName('modify-btn');
+            for (let c = 0; c < sButton.length; c++) {
+                sButton[c].addEventListener('click', () => {
+                    //synchronization code...
+                    // console.log('listener ' + c + ' created');
+                    // console.log(sButton[c].innerHTML + " " + c);
+                    //convertStatus((c - c % 2) / 2);
+                    //convertToSync();
+
+                    // $.ajax({
+                    //     method: "POST",
+                    //     url: "services/timeTracker",
+                    //     data: { name: "John", location: "Boston" }
+                    //     })
+                    //     .done(function(msg) {
+                    //     console.log("Data Saved: " + msg);
+                    //     });
+                });
+            }
+        } catch (e) {
+            console.log(e);
+        }
+
         for (let i = 0; i < ctrlBtns.length; i++) {
             ctrlBtns[i].addEventListener('click', () => {
                 try {
@@ -240,22 +340,29 @@ function secConvert($seconds) {
                                     tPaused[j].innerHTML = currentTime("paused_timestamp");
                                     status[j].innerHTML = 'Paused';
                                     ctrlBtns[j].innerHTML = 'Continue';
+                                    convertStatus(j);
                                 }
                             }
                         }
+                        //change status of other tasks to Paused and save timestamps
                         ctrlBtns[i].innerHTML = "Pause";
                         status[i].innerHTML = "Running";
+                        convertStatus(i);
                         tResumed[i].innerHTML = currentTime("resumed_timestamp");
-                        for (let i = 0; i < status.length; i++) {
-                            if (status[i].innerHTML === "Running") {
-                                ctrlBtns[i].innerHTML = "Pause";
-                            }
-                        }
-
+                        //pause other active task, if active
+                        // for (let i = 0; i < status.length; i++) {
+                        //     if (status[i].innerHTML === "Running") {
+                        //         ctrlBtns[i].innerHTML = "Pause";
+                        //     }
+                        // }
+                        //********************************
+                        //*СПОРНЫЙ МОМЕНТ ЦИКЛ стр351-355*
+                        //********************************
                     } else {
-                        //clearInterval(timeInterval);
+                        //change status of other tasks to Paused and save timestamps
                         ctrlBtns[i].innerHTML = "Continue";
                         status[i].innerHTML = "Paused";
+                        convertStatus(i);
                         tPaused[i].innerHTML = currentTime("paused_timestamp");
                     }
                 } catch (e) {
@@ -270,8 +377,10 @@ function secConvert($seconds) {
                     let status = document.getElementsByClassName('tasks_status');
                     let ctrlBtns = document.getElementsByClassName("ctrl_btn");
                     let tFinished = document.getElementsByClassName('task_finished');
+                    //change status  to Finished and save timestamps
                     tFinished[i].innerHTML = currentTime("finished_timestamp");
                     status[i].innerHTML = "Finished";
+                    convertStatus(i);
                     endBtns[i].style.display = 'none';
                     ctrlBtns[i].style.display = 'none';
                 } catch (e) {
@@ -292,7 +401,7 @@ function secConvert($seconds) {
             if (status[i].innerHTML === "Running") {
                 //activeTasks++;
                 timers[i].innerHTML = timer(timers[i].innerHTML);
-
+                timeToSec(i);
             }
         }
         // if ((activeTasks === 0) || (noActiveTasks)) {
@@ -322,6 +431,7 @@ function secConvert($seconds) {
         let ctrlBtns = document.getElementsByClassName("ctrl_btn");
         for (i = 0; i < status.length; i++) {
             status[i].innerHTML = "Paused";
+            convertStatus(i);
             ctrlBtns[i].innerHTML = "Continue";
             //     if (ctrlBtns[i].classList.contains('btn-warning')){
             // ctrlBtns[i].classList.remove('btn-warning');
