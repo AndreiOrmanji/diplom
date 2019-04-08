@@ -3,7 +3,7 @@ require_once '../db.php';
 /*Если нажата кнопка на регистрацию,
 /*начинаем проверку */
 $user = R::load('users', $_SESSION["id"]);
-if (isset($_POST['logout'])) header("Location: /logout");
+if (isset($_POST['logout'])) header("Location: ./logout");
 if (isset($_POST['submit']))
     //Утюжим пришедшие данные corresponding table. The ID of a bean is the primary key of the corresponding record. 
     if (!empty($_POST['email'])){

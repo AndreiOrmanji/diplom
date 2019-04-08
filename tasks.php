@@ -44,7 +44,7 @@ function secConvert($seconds) {
     <meta http-equiv="Content-Type" content="text/html" ; charset="utf-8">
 </head>
 
-<body onload="init()">
+<body>
     <a href="./">Main Page</a><br>
     <?php ?>
     <? if($_SESSION["email"]) : ?>
@@ -52,7 +52,7 @@ function secConvert($seconds) {
     <div class="container">
         <div class="my-5 mx-auto text-center">
             <!--<button class="btn btn-dark btn-lg" data-toggle="modal" data-target="#exampleModal">Открыть модальное окно</button>-->
-            <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#exampleModal">Open!</button>
+            <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#exampleModal">Create new task!</button>
         </div>
     </div>
     <!-- Modal -->
@@ -96,9 +96,8 @@ function secConvert($seconds) {
         </div>
     </div>
     <?php 
-    //$zzz = time();
-    echo time();
-    echo '<div>Current Time:<span class="current_time"> '.date("H:i:s", time()).'</span></div>';
+    echo '<div>You started tracking at '.date("H:i:s", time()).'('.time().')</div>';
+    echo '<div>Current Time: <span id="current_time"></span></div>';
     $user_tasks = R::find( 'tasks', ' user_id = ? ',  [$_SESSION['id']]);
     if(empty($user_tasks)) echo "No tasks were created.";
         else{
@@ -178,7 +177,7 @@ function secConvert($seconds) {
         //         <!--onclick="stopIntervalResponse();"-->>Stop response</button></td>
         //     </div>';
     ?>
-    <? else : ?>
+    <? else: ?>
     <?="You are not autorized. Go to <a href=\"./login\">Login Page.</a> ";?>
     </script>
     <? endif; ?>
@@ -192,7 +191,7 @@ function secConvert($seconds) {
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <script type="text/javascript">
     <!--
-
+    window.onload = init();
     function currentTime(info) {
         // body...
         let currentDate = new Date();
@@ -235,6 +234,7 @@ function secConvert($seconds) {
         let tFinished = document.getElementsByClassName("finished_timestamp")
         let tPaused = document.getElementsByClassName("paused_timestamp");
         let tResumed = document.getElementsByClassName("resumed_timestamp");
+
 
 
     }
@@ -304,9 +304,10 @@ function secConvert($seconds) {
                     //synchronization code...
                     // console.log('listener ' + c + ' created');
                     // console.log(sButton[c].innerHTML + " " + c);
+                    let s = (c - c % 2) / 2;
                     //convertStatus((c - c % 2) / 2);
                     //convertToSync();
-
+                    let 
                     // $.ajax({
                     //     method: "POST",
                     //     url: "services/timeTracker",
@@ -412,8 +413,8 @@ function secConvert($seconds) {
     }, 1000);
 
     var currentTimeInterval = setInterval(() => {
-        let currentTime = document.getElementsByClassName("current_time");
-        currentTime[0].innerHTML = timer(currentTime[0].innerHTML);
+        let systemTime = document.getElementById('current_time');
+        systemTime.innerHTML = currentTime("systemTime");
     }, 1000);
     // var responseInterval = setInterval(() => {
     // $.ajax({

@@ -2,7 +2,7 @@
 require_once '../db.php';
 try{
     ob_start();
-    if ( isset($_POST['submit']) ) {
+    if ( isset($_POST['submit']) && ($_SESSION["id"]!=NULL) ) {
         //echo '<pre>'.var_dump($_POST['submit']).'</pre>';
         $task = R::dispense ('tasks');
         $task->userId = $_SESSION["id"];                                        //user id
@@ -24,6 +24,7 @@ try{
             $task->tResumed = NULL;
         }
         R::store( $task );
+    }
         //echo '<meta http-equiv="Refresh" content="2; url=./tasks">';
         //echo '';
         header("Location: ../tasks");
@@ -32,7 +33,7 @@ try{
         //     $_POST[$key]='';
         // }        
         //var_dump($task);
-    }
+    
 }
 catch(Exception $e){
     echo '<div style = "color:red;">'."Task failed!".'</div><hr>';
