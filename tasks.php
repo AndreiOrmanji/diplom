@@ -1,18 +1,11 @@
 <?php
 require_once 'db.php';
 
-function time_counted($timeCounted)
-{
-    # code...
-    //$current_time=time();
-    return date("r", $timeCounted);
-}
-
 function current_time($tResumed)
 {
     # code...
     //$current_time=time();
-    if (($tResumed===NULL)|| ($tResumed===0)) {
+    if (($tResumed===NULL) || ($tResumed===0) || ($tResumed==="")) {
         # code...
         return "-----";
     } else {
@@ -39,16 +32,21 @@ function secConvert($seconds) {
 
 <head>
     <title>Tasks</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="./libs/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="Content-Type" content="text/html" ; charset="utf-8">
+    <style>
+    th {
+        text-align: center!important;
+    }
+    </style>
 </head>
 
 <body>
     <a href="./">Main Page</a><br>
     <?php ?>
-    <? if($_SESSION["email"]) : ?>
-    <?="You are using, ". $_SESSION["email"] . " as your e-mail adress.";?>
+    <? if($_SESSION['email']) : ?>
+    <?="You are using, ". $_SESSION['email'] ." as your e-mail adress.";?>
     <div class="container">
         <div class="my-5 mx-auto text-center">
             <!--<button class="btn btn-dark btn-lg" data-toggle="modal" data-target="#exampleModal">Открыть модальное окно</button>-->
@@ -96,13 +94,15 @@ function secConvert($seconds) {
         </div>
     </div>
     <?php 
-    echo '<div>You started tracking at '.date("H:i:s", time()).'('.time().')</div>';
+    $timeNow = time();
+    echo '<div>Tracking starts at '.date("H:i:s", time()).'('.time().')</div>';
     echo '<div>Current Time: <span id="current_time"></span></div>';
     $user_tasks = R::find( 'tasks', ' user_id = ? ',  [$_SESSION['id']]);
     if(empty($user_tasks)) echo "No tasks were created.";
         else{
             echo '<div class="container">
-                    <h6>Current tasks of user <strong><i>'.$_SESSION['email'].',</i></strong></h6>
+                    <h6>Current tasks of user <strong><i>'.$_SESSION['email'].' </i></strong></h6>
+                    <span id="userId" style="display:none;">'.$_SESSION['id'].'</span>
                     <table class="table">    
                         <thead>
                             <tr>
@@ -124,6 +124,7 @@ function secConvert($seconds) {
                     case '1':
                         # code...
                         $status="Running";
+                        $t['timeCounted']=$t['timeCounted']+($timeNow-$t['tResumed']);
                         break;
                     
                     case '0':
@@ -137,20 +138,21 @@ function secConvert($seconds) {
                 //date("H:i:s", time()-$t['time_resume']).'</td>secConvert($zzz-$t['time_resume'])    date("d.m.Y H:i:s",$t['time_resume'])
                 //.secConvert(time()-$t['time_resume'])[0].':'.secConvert(time()-$t['time_resume'])[1].':'.secConvert(time()-$t['time_resume'])[2].
                 //<span class="status_code" style="display: none">'.$t['status'].'</span>
-//<td class="task_created">'.current_time($t['tCreated']).'</td>
+                //<td class="task_created">'.current_time($t['tCreated']).'</td>
                 echo'<tr>
-                    <td class="project_name">'.$t['prName'].'</td>
-                    <td class="task_name">'.$t['tName'].'</td>
+                    <td class="project_name" style="text-align: center;">'.$t['prName'].'</td>
+                    <td class="task_name" style="text-align: center;">'.$t['tName'].'</td>
                     <td class="task_desc">'.$t['tDesc'].'</td>
-                    <td><span class="tasks_status">'.$status.'</span><span class="status_code" style="display: none">'.$t['status'].'</span></td> 
-                    <td><span class="tasks_time">'.secConvert($t['timeCounted']).'</span><span class="time_counted_sec" style="display: none">'.$t['timeCounted'].'</span></td>
-                    <td class="task_resumed"><span class="resumed_timestamp" style="display: none">'.$t['tResumed'].'</span>'.current_time($t['tResumed']).'</td>
-                    <td class="task_paused"><span class="paused_timestamp" style="display: none">'.$t['tPaused'].'</span>'.current_time($t['tPaused']).'</td>
-                    <td class="task_created"><span class="created_timestamp" style="display: none">'.$t['tCreated'].'</span>'.current_time($t['tCreated']).'</td>
-                    <td class="task_finished"><span class="finished_timestamp" style="display: none">'.$t['tFinished'].'</span>'.current_time($t['tFinished']).'</td>
+                    <td><span class="tasks_status" style="text-align: center;">'.$status.'</span><span class="status_code" style="display: none">'.$t['status'].'</span></td> 
+                    <td><span class="tasks_time" style="text-align: center;">'.secConvert($t['timeCounted']).'</span><span class="time_counted_sec" style="display: none">'.$t['timeCounted'].'</span></td>
+                    <td class="task_resumed" style="text-align: center;"><span class="resumed_timestamp" style="display: none">'.$t['tResumed'].'</span>'.current_time($t['tResumed']).'</td>
+                    <td class="task_paused" style="text-align: center;"><span class="paused_timestamp" style="display: none">'.$t['tPaused'].'</span>'.current_time($t['tPaused']).'</td>
+                    <td class="task_created" style="text-align: center;"><span class="created_timestamp" style="display: none">'.$t['tCreated'].'</span>'.current_time($t['tCreated']).'</td>
+                    <td class="task_finished" style="text-align: center;"><span class="finished_timestamp" style="display: none">'.$t['tFinished'].'</span>'.current_time($t['tFinished']).'</td>
                     <td><div class="btn-group">
                         <button name="startButton'.$t["id"].'" type="button" class="ctrl_btn modify-btn btn btn-info btn-sm">Continue</button>
                         <button name="finishButton'.$t["id"].'" type="button" class="end_btn modify-btn btn btn-secondary btn-sm">Finish</button>
+                        <span class="task_id" style="display: none">'.$t['id'].'</span>
                     </div></td>
                     </tr>';
             }
@@ -179,19 +181,16 @@ function secConvert($seconds) {
     ?>
     <? else: ?>
     <?="You are not autorized. Go to <a href=\"./login\">Login Page.</a> ";?>
-    </script>
     <? endif; ?>
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-    <script>
-    window.jQuery || document.write('<script src="./libs/jquery-3.3.1.min.js"></body\/script>')
-    </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script src="./libs/jquery-3.3.1.min.js"></script>
+    <script src="./libs/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="./libs/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <script type="text/javascript">
     <!--
     window.onload = init();
+
     function currentTime(info) {
         // body...
         let currentDate = new Date();
@@ -215,35 +214,44 @@ function secConvert($seconds) {
         timeCounted[i].innerHTML = Number(timeCounted[i].innerHTML) + 1;
     }
 
-    // function toPause(i) {
-    //     // body...
-    //     tPaused[i].innerHTML = currentTime("paused_timestamp");
-    //     status[i].innerHTML = 'Paused';
-    //     ctrlBtns[i].innerHTML = 'Continue';
-    // }
-
-    function convertToSync() {
+    function convertToSync(index) {
         // body...
-        let userId = Number(<?php echo $_SESSION['id']; ?>);
+        let id = document.getElementsByClassName("task_id");
+        let userId = document.getElementById("userId");
         let prName = document.getElementsByClassName("project_name");
         let tName = document.getElementsByClassName("task_name");
         let tDesc = document.getElementsByClassName("task_desc");
-        let tStatus = document.getElementsByClassName("tasks_status");
+        let tStatus = document.getElementsByClassName('status_code');
         let timeCounted = document.getElementsByClassName("time_counted_sec");
-        let tCreated = document.getElementsByClassName("task_created");
+        let tCreated = document.getElementsByClassName("created_timestamp");
         let tFinished = document.getElementsByClassName("finished_timestamp")
         let tPaused = document.getElementsByClassName("paused_timestamp");
         let tResumed = document.getElementsByClassName("resumed_timestamp");
-
-
-
+        let tasksData = [];
+        //console.log(tName.length);
+        for (let index = 0; index < tName.length; index++) {
+            tasksData.push({
+                "id" : id[index].innerHTML,
+                "userId" : userId.innerHTML,
+                "prName" : prName[index].innerHTML,
+                "tName" : tName[index].innerHTML,
+                "tDesc" : tDesc[index].innerHTML,
+                "tCreated" : tCreated[index].innerHTML,
+                "tFinished" : tFinished[index].innerHTML,
+                "tPaused" : tPaused[index].innerHTML,
+                "timeCounted" : timeCounted[index].innerHTML,
+                "status" : tStatus[index].innerHTML,
+                "tResumed" : tResumed[index].innerHTML
+            });
+        }
+        return tasksData;
     }
 
     function convertStatus(i) {
         // body...
         let statusMark = document.getElementsByClassName('tasks_status');
         let statusCode = document.getElementsByClassName('status_code');
-        console.log(statusMark[i].innerHTML);
+        //console.log(statusMark[i].innerHTML);
         switch (statusMark[i].innerHTML) {
             case 'Running':
                 {
@@ -258,12 +266,24 @@ function secConvert($seconds) {
             case 'Finished':
                 {
                     statusCode[i].innerHTML = 2;
-                    console.log(statusCode[i]);
+                    //console.log(statusCode[i]);
                     break;
                 }
         }
     }
 
+    function doSync() {
+        let sendData = convertToSync();
+        //console.log(sendData);
+        $.ajax({
+                method: "POST",
+                url: "services/timeTracker",
+                data: { data: sendData }
+            })
+            .done(function(msg) {
+                console.log(msg);
+        });
+    }
 
     function timer(string) {
         // body...
@@ -294,34 +314,10 @@ function secConvert($seconds) {
         //change button label for Start/Pause button from Continue to Pause if task is running
         for (let i = 0; i < status.length; i++) {
             if (status[i].innerHTML === "Running") {
+                doSync();
                 ctrlBtns[i].innerHTML = "Pause";
             }
         }
-        try {
-            let sButton = document.getElementsByClassName('modify-btn');
-            for (let c = 0; c < sButton.length; c++) {
-                sButton[c].addEventListener('click', () => {
-                    //synchronization code...
-                    // console.log('listener ' + c + ' created');
-                    // console.log(sButton[c].innerHTML + " " + c);
-                    let s = (c - c % 2) / 2;
-                    //convertStatus((c - c % 2) / 2);
-                    //convertToSync();
-                    let 
-                    // $.ajax({
-                    //     method: "POST",
-                    //     url: "services/timeTracker",
-                    //     data: { name: "John", location: "Boston" }
-                    //     })
-                    //     .done(function(msg) {
-                    //     console.log("Data Saved: " + msg);
-                    //     });
-                });
-            }
-        } catch (e) {
-            console.log(e);
-        }
-
         for (let i = 0; i < ctrlBtns.length; i++) {
             ctrlBtns[i].addEventListener('click', () => {
                 try {
@@ -370,7 +366,9 @@ function secConvert($seconds) {
                     console.log(e);
                 }
             });
+
         }
+
         let endBtns = document.getElementsByClassName("end_btn");
         for (let i = 0; i < endBtns.length; i++) {
             endBtns[i].addEventListener('click', () => {
@@ -388,6 +386,28 @@ function secConvert($seconds) {
                     console.log(e);
                 }
             });
+        }
+
+        try {
+            let sButton = document.getElementsByClassName('modify-btn');
+            for (let c = 0; c < sButton.length; c++) {
+                sButton[c].addEventListener('click', () => {
+                    //synchronization code...
+                    // console.log('listener ' + c + ' created');
+                    // console.log(sButton[c].innerHTML + " " + c);
+                    //let s = (c - c % 2) / 2;
+                    //convertStatus((c - c % 2) / 2);
+                    //convertToSync();
+                    let sendData = convertToSync();
+                    //console.log(sendData);
+                    doSync();
+                });
+            }
+            window.addEventListener('unload', function(event) {
+                doSync();
+            });
+        } catch (e) {
+            console.log(e);
         }
     }
     //var noActiveTasks = <?php if(empty($user_tasks)) echo "true"; else echo "false"; ?>
@@ -415,17 +435,8 @@ function secConvert($seconds) {
     var currentTimeInterval = setInterval(() => {
         let systemTime = document.getElementById('current_time');
         systemTime.innerHTML = currentTime("systemTime");
+
     }, 1000);
-    // var responseInterval = setInterval(() => {
-    // $.ajax({
-    // method: "POST",
-    // url: "services/timeTracker",
-    // data: { name: "John", location: "Boston" }
-    // })
-    // .done(function(msg) {
-    // console.log("Data Saved: " + msg);
-    // });
-    // }, 1000);
 
     function pauseTasks() {
         let status = document.getElementsByClassName("tasks_status");
