@@ -3,16 +3,14 @@ require_once 'db.php';
 
 function current_time($tResumed)
 {
-    # code...
-    //$current_time=time();
+    
     if (($tResumed===NULL) || ($tResumed===0) || ($tResumed==="")) {
-        # code...
+        
         return "-----";
     } else {
-        # code...
+        
         return date("H:i:s d.m.Y", $tResumed);
     }
-    
 }
 
 function secConvert($seconds) {
@@ -24,9 +22,9 @@ function secConvert($seconds) {
     $s = str_pad($s, 2, "0", STR_PAD_LEFT);
     return $h.':'.$m.':'.$s;
     //return array($h, $m, $s);
-    //
 }
 ?>
+
 <!DOCTYPE html>
 <html>
 
@@ -80,10 +78,12 @@ function secConvert($seconds) {
                             <label for="tdesc">Task description:</label>
                             <textarea id="tdesc" class="form-control" name="tdesc" rows="4" placeholder="Optional" value=""></textarea>
                         </div>
+                        <!-- 
                         <div class="form-group form-check">
                             <input id="check" class="form-check-input" name="check" type="checkbox">
                             <label class="form-check-label" for="check">Start tracking after creation.</label>
-                        </div>
+                        </div> 
+                        -->
                         <button id="button" class="btn btn-success btn-block" name="submit" type="submit">Create task!</button>
                         <div class="result">
                             <span id="answer"></span>
@@ -119,26 +119,22 @@ function secConvert($seconds) {
                             </tr>
                         </thead>
                         <tbody>';
-            foreach ($user_tasks as $t) {
+            foreach (array_reverse($user_tasks)as $t) {
                 switch ($t['status']) {
                     case '1':
-                        # code...
+                        
                         $status="Running";
                         $t['timeCounted']=$t['timeCounted']+($timeNow-$t['tResumed']);
                         break;
                     
                     case '0':
-                        # code...
+                        
                         $status="Paused";
                         break;
                     default:
                         $status="Finished";
                         break;
                 }
-                //date("H:i:s", time()-$t['time_resume']).'</td>secConvert($zzz-$t['time_resume'])    date("d.m.Y H:i:s",$t['time_resume'])
-                //.secConvert(time()-$t['time_resume'])[0].':'.secConvert(time()-$t['time_resume'])[1].':'.secConvert(time()-$t['time_resume'])[2].
-                //<span class="status_code" style="display: none">'.$t['status'].'</span>
-                //<td class="task_created">'.current_time($t['tCreated']).'</td>
                 echo'<tr>
                     <td class="project_name" style="text-align: center;">'.$t['prName'].'</td>
                     <td class="task_name" style="text-align: center;">'.$t['tName'].'</td>
@@ -192,7 +188,7 @@ function secConvert($seconds) {
     window.onload = init();
 
     function currentTime(info) {
-        // body...
+        
         let currentDate = new Date();
         let now = Date.now();
         let date = currentDate.getDate();
@@ -203,9 +199,10 @@ function secConvert($seconds) {
     }
 
     function hmsToSec(hmsString) {
-        // body...
+        
         var q = hmsString.split(':'); // split it at the colons
-        var seconds = (+q[0]) * 60 * 60 + (+q[1]) * 60 + (+q[2]);
+        return seconds = (+q[0]) * 60 * 60 + (+q[1]) * 60 + (+q[2]);
+        
     }
 
     function timeToSec(i) {
@@ -215,7 +212,7 @@ function secConvert($seconds) {
     }
 
     function convertToSync(index) {
-        // body...
+        
         let id = document.getElementsByClassName("task_id");
         let userId = document.getElementById("userId");
         let prName = document.getElementsByClassName("project_name");
@@ -248,7 +245,7 @@ function secConvert($seconds) {
     }
 
     function convertStatus(i) {
-        // body...
+        
         let statusMark = document.getElementsByClassName('tasks_status');
         let statusCode = document.getElementsByClassName('status_code');
         //console.log(statusMark[i].innerHTML);
@@ -286,7 +283,7 @@ function secConvert($seconds) {
     }
 
     function timer(string) {
-        // body...
+        
         //a[2] - sec
         //a[1] - min
         //a[0] - hrs
@@ -314,7 +311,6 @@ function secConvert($seconds) {
         //change button label for Start/Pause button from Continue to Pause if task is running
         for (let i = 0; i < status.length; i++) {
             if (status[i].innerHTML === "Running") {
-                doSync();
                 ctrlBtns[i].innerHTML = "Pause";
             }
         }
@@ -403,9 +399,9 @@ function secConvert($seconds) {
                     doSync();
                 });
             }
-            window.addEventListener('unload', function(event) {
-                doSync();
-            });
+            // window.addEventListener('unload', function(event) {
+            //     doSync();
+            // });
         } catch (e) {
             console.log(e);
         }
@@ -453,7 +449,7 @@ function secConvert($seconds) {
     }
 
     // function stopIntervalResponse() {
-    //     // body...
+    //     
     //     clearInterval(responseInterval);
     // }
 

@@ -14,15 +14,8 @@ try{
         $task->tFinished=NULL;                                                  //task finished
         $task->tPaused=NULL;
         $task->timeCounted = 0;                                                 //time already counted
-
-        if (isset($_POST['check'])) {
-            $task->status = 1; //task is running
-            $task->tResumed = time();
-        }
-        else{
-            $task->status = 0; //task is stopped
-            $task->tResumed = NULL;
-        }
+        $task->status = 0; //task is stopped
+        $task->tResumed = NULL;
         R::store( $task );
     }
         //echo '<meta http-equiv="Refresh" content="2; url=./tasks">';

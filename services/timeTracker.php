@@ -7,7 +7,7 @@ try{
     # code...
     $task = R::load('tasks',$data[$i]["id"]);
     $task -> import($data[$i]);
-    print_r ($task);  
+    //print_r ($task);  
     R::store( $task );
   }
 }catch(Exception $e){
