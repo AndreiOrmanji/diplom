@@ -1,18 +1,28 @@
 <?php
 require_once './db.php';
 
-function current_time($tResumed)
+function returnDate($tResumed)
 {
     if (($tResumed===NULL) || ($tResumed===0) || ($tResumed==="")) {       
         return "-----";
     } else {
-        return date("H:i:s d.m.Y", $tResumed);
+        return date("d.m.Y", $tResumed);
     }
 }
 
+function returnTime($tResumed)
+{
+    if (($tResumed===NULL) || ($tResumed===0) || ($tResumed==="")) {       
+        return "-----";
+    } else {
+        return date("H:i:s", $tResumed);
+    }
+}
+ 
+
 function secConvert($seconds) {
     $h = floor($seconds / 3600);
-    $h = str_pad($h, 1, "0", STR_PAD_LEFT);
+    //$h = str_pad($h, 1, "0", STR_PAD_LEFT);
     $m = floor(($seconds / 60) % 60);
     $m = str_pad($m, 2, "0", STR_PAD_LEFT);
     $s = $seconds % 60;
@@ -26,7 +36,7 @@ function secConvert($seconds) {
 <html>
 
 <head>
-    <title>Tasks</title>
+    <title>Stats</title>
     <link rel="stylesheet" href="./libs/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="Content-Type" content="text/html" ; charset="utf-8">
@@ -41,143 +51,59 @@ function secConvert($seconds) {
     <a href="./">Main Page</a><br>
     <?php if($_SESSION['email']) : ?>
     <?="You are using, ". $_SESSION['email'] ." as your e-mail adress.";?>
-    <div class="container">
-        <div class="my-5 mx-auto text-center">
-            <!--<button class="btn btn-dark btn-lg" data-toggle="modal" data-target="#exampleModal">Открыть модальное окно</button>-->
-            <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#exampleModal">Create new task!</button>
-        </div>
-    </div>
-    <!-- Modal -->
-    <div class="modal fade" id="exampleModal" role="dialog">
-        <!-- Modal 
-        <button name="stopButton'.$t["id"].'" type="button" class="btn btn-info btn-sm">Stop</button></td>-->
-        <!--<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" > -->
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Create new task</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="contactForm" action="./services/addTask" method="post">
-                        <div class="form-group">
-                            <label for="prname">ProjectName:</label>
-                            <input id="prname" class="form-control" name="prname" type="text" placeholder="Project name" value="">
-                        </div>
-                        <div class="form-group">
-                            <label for="tname">Task:</label>
-                            <input id="tname" class="form-control" name="tname" required type="text" placeholder="Task name" value="">
-                        </div>
-                        <div class="form-group">
-                            <label for="tdesc">Task description:</label>
-                            <textarea id="tdesc" class="form-control" name="tdesc" rows="4" placeholder="Optional" value=""></textarea>
-                        </div>
-                        <!-- 
-                        <div class="form-group form-check">
-                            <input id="check" class="form-check-input" name="check" type="checkbox">
-                            <label class="form-check-label" for="check">Start tracking after creation.</label>
-                        </div> 
-                        -->
-                        <button id="button" class="btn btn-success btn-block" name="submit" type="submit">Create task!</button>
-                        <div class="result">
-                            <span id="answer"></span>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-    <?php 
+    <div></div>
+    <?php
     $timeNow = time();
     echo '<div>Tracking starts at '.date("H:i:s", time()).'('.time().')</div>';
     echo '<div>Current Time: <span id="current_time"></span></div>';
-    $user_tasks = R::find( 'tasks', ' user_id = ? ',  [$_SESSION['id']]);
-    if(empty($user_tasks)) echo "No tasks were created.";
+    $logs = R::find( 'logs', ' user_id = ? ',  [$_SESSION['id']]);
+    //echo print_r($logs);
+    if(empty($logs)) echo "No activity by ".$_SESSION['email'].".";
         else{
-            echo '<div class="container">
-                    <h6>Current tasks of user <strong><i>'.$_SESSION['email'].' </i></strong></h6>
-                    <span id="userId" style="display:none;">'.$_SESSION['id'].'</span>
-                    <table class="table">    
+            $dateArray = R::getCol( 'SELECT DISTINCT date FROM logs;' );
+            foreach ($dateArray as $logDate) {
+                # code...
+                
+                echo '<div class="container">';
+                echo 'Table for '.$logDate.'
+                <h6>Current tasks of user <strong><i>'.$_SESSION['email'].'</i></strong></h6>
+                <span id="userId" style="display:none;">'.$_SESSION['id'].'</span>
+                <table class="table">    
                         <thead>
-                            <tr>
-                                <th>Projectname</th>
-                                <th>Taskname</th>
-                                <th>Description</th>
-                                <th>Status</th>
-                                <th>Time used</th>
-                                <th>Time resumed</th>
-                                <th>Time paused</th>
-                                <th>Time created</th>
-                                <th>Time finished</th>
-                                <th>Control</th>
-                            </tr>
+                        <tr>
+                                <th>#</th>
+                                <th>User_ID</th>
+                                <th>UserName</th>
+                                <th>ProjectName</th>
+                                <th>TaskName</th>
+                                <th>New status</th>
+                                <th>Timestamp</th>
+                                <th>Time</th>
+                                <th>Date</th>
+                        </tr>
                         </thead>
                         <tbody>';
-            foreach (array_reverse($user_tasks)as $t) {
-                switch ($t['status']) {
-                    case '1':
-                        
-                        $status="Running";
-                        $t['timeCounted']=$t['timeCounted']+($timeNow-$t['tResumed']);
-                        break;
-
-                    case '0':
-                        
-                        $status="Paused";
-                        break;
-                    default:
-                        $status="Finished";
-                        break;
-                }
-                echo'<tr>
-                    <td class="project_name" style="text-align: center;">'.$t['prName'].'</td>
-                    <td class="task_name" style="text-align: center;">'.$t['tName'].'</td>
-                    <td class="task_desc">'.$t['tDesc'].'</td>
-                    <td><span class="tasks_status" style="text-align: center;">'.$status.'</span><span class="status_code" style="display: none">'.$t['status'].'</span></td> 
-                    <td><span class="tasks_time" style="text-align: center;">'.secConvert($t['timeCounted']).'</span><span class="time_counted_sec" style="display: none">'.$t['timeCounted'].'</span></td>
-                    <td class="task_resumed" style="text-align: center;"><span class="resumed_timestamp" style="display: none">'.$t['tResumed'].'</span>'.current_time($t['tResumed']).'</td>
-                    <td class="task_paused" style="text-align: center;"><span class="paused_timestamp" style="display: none">'.$t['tPaused'].'</span>'.current_time($t['tPaused']).'</td>
-                    <td class="task_created" style="text-align: center;"><span class="created_timestamp" style="display: none">'.$t['tCreated'].'</span>'.current_time($t['tCreated']).'</td>
-                    <td class="task_finished" style="text-align: center;"><span class="finished_timestamp" style="display: none">'.$t['tFinished'].'</span>'.current_time($t['tFinished']).'</td>
-                    <td>
-                    ';
-                    if($status!=="Finished") {
-                    echo '   <div class="btn-group">
-                            <button name="startButton'.$t["id"].'" type="button" class="ctrl_btn modify-btn btn btn-info btn-sm">Continue</button>
-                            <button name="finishButton'.$t["id"].'" type="button" class="end_btn modify-btn btn btn-secondary btn-sm">Finish</button>
-                            <span class="task_id" style="display: none">'.$t['id'].'</span>
-                        </div>';
+                        foreach (array_reverse($logs)as $log) {
+                            if ($logDate===$log['date']){
+                                echo'<tr>
+                                <td class="log_id" style="text-align: center;">'.$log['id'].'</td>
+                                <td class="log_user_id" style="text-align: center;">'.$_SESSION['id'].'</td>
+                                <td class="username" style="text-align: center;">'.$_SESSION['email'].'</td>
+                                <td class="log_pr_name" style="text-align: center;">'.$log['pr_name'].'</td> 
+                                <td class="log_t_name" style="text-align: center;">'.$log['t_name'].'</td> 
+                                <td class="log_new_status" style="text-align: center;">'.$log['new_status'].'</td>
+                                <td class="log_timestamp" style="text-align: center;">'.$log['timestamp'].'</td>
+                                <td class="log_time" style="text-align: center;">'.$log['time'].'</td>
+                                <td class="log_date" style="text-align: center;">'.$log['date'].'</td>
+                                </tr>';
+                            }
+                        }
+                            echo        '</tbody>
+                            </table>' ;
                     }
-                    echo '
-                    </td>
-                    </tr>';
-            }
-            echo        '</tbody>
-                    </table>' ;
-            // echo '<table class="table-hidden" style="display:none">
-    // <tbody>';
-        // foreach ($user_tasks as $t) {
-        // echo '<tr>
-            // <td class="time_counted_sec">'.$t['timeCounted'].'</td>
-            // <td class="resumed_timestamp"></td>
-            // <td class="paused_timestamp"></td>
-            // <td class="created_timestamp">'.$t['tCreated'].'</td>
-            // <td class="finished_timestamp"></td>
-            // <td class="status_code"></td>
-            // </tr>';
-        // }
-        // echo'</tbody>
-    // </table>' ;
-
-        }
-        // echo'<div>
-        //         <button name="stopResponseButton" type="button" class="btn btn-warning btn-lg" 
-        //         <!--onclick="stopIntervalResponse();"-->>Stop response</button></td>
-        //     </div>';
-    ?>
-    <?php else: ?>
+                }
+                    ?>
+            <?php else: ?>
     <?="You are not autorized. Go to <a href=\"./login\">Login Page.</a> ";?>
     <?php endif; ?>
     <!-- Optional JavaScript -->
@@ -528,4 +454,4 @@ function secConvert($seconds) {
     </script>
 </body>
 
-</html>
+</html>                        

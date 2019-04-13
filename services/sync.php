@@ -6,6 +6,8 @@ $data = $_POST['data'];
 try{
         $logRecord = R::dispense ( 'logs' );
         $logRecord->import($data);
+        $logRecord->time = date("H:i:s",$logRecord->timestamp);
+        $logRecord->date = date("Y-m-d",$logRecord->timestamp);
         R::store( $logRecord );
     // $tmp = $logRecord->export();
     // echo $tmp;

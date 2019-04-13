@@ -25,7 +25,7 @@ require_once 'db.php';
 
 <body>
     <a href="./">Main Page</a><br>
-    <? if($_SESSION["email"]) : ?>
+    <?php if($_SESSION["email"]) : ?>
     <?="You are using, ". $_SESSION["email"] . " as your e-mail adress."; ?>
     <form id="UserForm" class="form-horizontal container" action="./services/modifyUser" method="POST">
         <div class="form-group">
@@ -60,7 +60,7 @@ require_once 'db.php';
             </div>
         </div>
     </form>
-    <? else : ?>
+    <?php else : ?>
     <?="You are not autorized. Go to <a href=\"./login\">Login Page.</a> ";?>
     <div>You'll be redirected to the main page after
         <span id="timer"></span> seconds. If it didn't happend, press <a href="./login">Login Page</a> link.</div>
@@ -73,13 +73,13 @@ require_once 'db.php';
             document.getElementById('timer').innerHTML = t;
         } else {
             clearInterval(tm);
-            location.href = '/';
+            location.href = './';
         }
     }
     var tm = setInterval('refr_time();', 1000);
     -->
     </script>
-    <? endif; ?>
+    <?php endif; ?>
 </body>
 
 </html>
