@@ -10,13 +10,22 @@ try{
         $task->tName = $_POST['tname'];                                         //task name
         $task->tDesc = $_POST['tdesc'];                                         //description
         $task->tCreated=time();  
-                                                                                //task created
+        //task created
         $task->tFinished=NULL;                                                  //task finished
         $task->tPaused=NULL;
         $task->timeCounted = 0;                                                 //time already counted
-        $task->status = 0; //task is stopped
+        $task->status = 0; 
+        //task is stopped
         $task->tResumed = NULL;
-        R::store( $task );
+        $task_id = R::store( $task );
+        $task = R::load( 'tasks', $task_id);
+        $logRecord = R::dispense ('logs');
+        $logRecord->userId = $task['userId'];
+        $logRecord->prName = $task['prName'];
+        $logRecord->tName = $task['tName'];
+        $logRecord->newStatus =  'Created';
+        $logRecord->timestamp = $task['tCreated'];
+        R::store($logRecord);
     }
         //echo '<meta http-equiv="Refresh" content="2; url=./tasks">';
         //echo '';

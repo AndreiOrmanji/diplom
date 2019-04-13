@@ -3,12 +3,9 @@ require_once 'db.php';
 
 function current_time($tResumed)
 {
-    
-    if (($tResumed===NULL) || ($tResumed===0) || ($tResumed==="")) {
-        
+    if (($tResumed===NULL) || ($tResumed===0) || ($tResumed==="")) {       
         return "-----";
     } else {
-        
         return date("H:i:s d.m.Y", $tResumed);
     }
 }
@@ -126,7 +123,7 @@ function secConvert($seconds) {
                         $status="Running";
                         $t['timeCounted']=$t['timeCounted']+($timeNow-$t['tResumed']);
                         break;
-                    
+
                     case '0':
                         
                         $status="Paused";
@@ -225,7 +222,6 @@ function secConvert($seconds) {
         let tPaused = document.getElementsByClassName("paused_timestamp");
         let tResumed = document.getElementsByClassName("resumed_timestamp");
         let tasksData = [];
-        //console.log(tName.length);
         for (let index = 0; index < tName.length; index++) {
             tasksData.push({
                 "id" : id[index].innerHTML,
@@ -237,7 +233,7 @@ function secConvert($seconds) {
                 "tFinished" : tFinished[index].innerHTML,
                 "tPaused" : tPaused[index].innerHTML,
                 "timeCounted" : timeCounted[index].innerHTML,
-                "status" : tStatus[index].innerHTML,
+                "status" : tStatus[index].innerHTML,    
                 "tResumed" : tResumed[index].innerHTML
             });
         }
@@ -248,7 +244,6 @@ function secConvert($seconds) {
         
         let statusMark = document.getElementsByClassName('tasks_status');
         let statusCode = document.getElementsByClassName('status_code');
-        //console.log(statusMark[i].innerHTML);
         switch (statusMark[i].innerHTML) {
             case 'Running':
                 {
@@ -263,7 +258,6 @@ function secConvert($seconds) {
             case 'Finished':
                 {
                     statusCode[i].innerHTML = 2;
-                    //console.log(statusCode[i]);
                     break;
                 }
         }
@@ -271,7 +265,6 @@ function secConvert($seconds) {
 
     function doSync() {
         let sendData = convertToSync();
-        //console.log(sendData);
         $.ajax({
                 method: "POST",
                 url: "services/timeTracker",
@@ -279,6 +272,74 @@ function secConvert($seconds) {
             })
             .done(function(msg) {
                 console.log(msg);
+        });
+        doSyncLog();
+        
+        // $.ajax({
+        //         method: "POST",
+        //         url: "services/sync",
+        //         data: { data: logs }
+        //     })
+        //     .done(function(message) {
+        //         console.log(message);
+        // });
+        
+    }
+
+    function createLog(id, newStatus){
+        let task_id = document.getElementsByClassName("task_id");
+        let user_id = document.getElementById("userId");
+        let prName = document.getElementsByClassName("project_name");
+        let tName = document.getElementsByClassName("task_name");
+        let tDesc = document.getElementsByClassName("task_desc");
+        let tStatus = document.getElementsByClassName('status_code');
+        let timeCounted = document.getElementsByClassName("time_counted_sec");
+
+        let tCreated = document.getElementsByClassName("created_timestamp");
+        let tFinished = document.getElementsByClassName("finished_timestamp")
+        let tPaused = document.getElementsByClassName("paused_timestamp");
+        let tResumed = document.getElementsByClassName("resumed_timestamp");
+        let timestamp;
+        switch (newStatus) {
+            case 'Running':
+                {
+                    timestamp = tResumed[id].innerHTML;
+                    break;
+                }
+            case 'Paused':
+                {
+                    timestamp = tPaused[id].innerHTML;
+                    break;
+                }
+            case 'Finished':
+                {
+                    timestamp = tFinished[id].innerHTML;
+                    break;
+                }
+        }
+        
+        let logRecord = {
+                "user_Id" : user_id.innerHTML,
+                "task_id" : task_id[id].innerHTML,
+                "prName" : prName[id].innerHTML,
+                "tName" : tName[id].innerHTML,
+                "newStatus" : newStatus,    
+                "timestamp" : timestamp
+            }
+        return logRecord;
+    }
+
+    var logs = [];
+    function doSyncLog() {
+        //let sendData = convertToSync();
+        //console.log(sendData);
+        $.ajax({
+                method: "POST",
+                url: "services/sync",
+                data: { data: logs }
+            })
+            .done(function(message) {
+                console.log(message);
         });
     }
 
@@ -305,8 +366,7 @@ function secConvert($seconds) {
     }
 
     function init() {
-
-        let ctrlBtns = document.getElementsByClassName("ctrl_btn");
+        let ctrlBtns = document.getElementsByClassName('ctrl_btn');
         let status = document.getElementsByClassName('tasks_status');
         //change button label for Start/Pause button from Continue to Pause if task is running
         for (let i = 0; i < status.length; i++) {
@@ -330,8 +390,9 @@ function secConvert($seconds) {
                                 //else if status is not finished 
                                 if (status[j].innerHTML === 'Running') {
                                     //change status of other tasks to Paused and save timestamps
-                                    tPaused[j].innerHTML = currentTime("paused_timestamp");
+                                    tPaused[j].innerHTML = currentTime('paused_timestamp');
                                     status[j].innerHTML = 'Paused';
+                                    logs = createLog(j,'Paused');
                                     ctrlBtns[j].innerHTML = 'Continue';
                                     convertStatus(j);
                                 }
@@ -340,8 +401,10 @@ function secConvert($seconds) {
                         //change status of other tasks to Paused and save timestamps
                         ctrlBtns[i].innerHTML = "Pause";
                         status[i].innerHTML = "Running";
+                        tResumed[i].innerHTML = currentTime('resumed_timestamp');
                         convertStatus(i);
-                        tResumed[i].innerHTML = currentTime("resumed_timestamp");
+
+                        logs = createLog(i,'Running');
                         //pause other active task, if active
                         // for (let i = 0; i < status.length; i++) {
                         //     if (status[i].innerHTML === "Running") {
@@ -353,10 +416,12 @@ function secConvert($seconds) {
                         //********************************
                     } else {
                         //change status of other tasks to Paused and save timestamps
-                        ctrlBtns[i].innerHTML = "Continue";
-                        status[i].innerHTML = "Paused";
+                        ctrlBtns[i].innerHTML = 'Continue';
+                        status[i].innerHTML = 'Paused';
                         convertStatus(i);
                         tPaused[i].innerHTML = currentTime("paused_timestamp");
+
+                        logs = createLog(i,'Paused');
                     }
                 } catch (e) {
                     console.log(e);
@@ -374,10 +439,14 @@ function secConvert($seconds) {
                     let tFinished = document.getElementsByClassName('task_finished');
                     //change status  to Finished and save timestamps
                     tFinished[i].innerHTML = currentTime("finished_timestamp");
-                    status[i].innerHTML = "Finished";
+                    status[i].innerHTML = 'Finished';
                     convertStatus(i);
+                    
+                    logs = createLog(i,'Finished');
+
                     endBtns[i].style.display = 'none';
                     ctrlBtns[i].style.display = 'none';
+
                 } catch (e) {
                     console.log(e);
                 }
@@ -396,7 +465,9 @@ function secConvert($seconds) {
                     //convertToSync();
                     let sendData = convertToSync();
                     //console.log(sendData);
+                    console.log(logs);
                     doSync();
+                    //doSyncLog();
                 });
             }
             // window.addEventListener('unload', function(event) {
@@ -447,12 +518,6 @@ function secConvert($seconds) {
             // }
         }
     }
-
-    // function stopIntervalResponse() {
-    //     
-    //     clearInterval(responseInterval);
-    // }
-
     -->
     </script>
 </body>

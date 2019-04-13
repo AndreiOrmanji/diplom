@@ -6,7 +6,7 @@ try{
   for ($i=0; $i < sizeof($data); $i++) { 
     # code...
     $task = R::load('tasks',$data[$i]["id"]);
-    $task -> import($data[$i]);
+    $task->import($data[$i]);
     //print_r ($task);  
     R::store( $task );
   }
