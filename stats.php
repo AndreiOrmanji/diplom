@@ -19,6 +19,15 @@ function returnTime($tResumed)
     }
 }
  
+function getTasksID (){
+    return R::getCol( 'SELECT DISTINCT task_id FROM logs WHERE user_id='.$_SESSION['id'] );
+    //return $array = print_r($array);
+}
+
+function getProjects (){
+    return R::getCol( 'SELECT DISTINCT pr_name FROM logs WHERE user_id='.$_SESSION['id'] );
+    //return $array = print_r($array);
+}
 
 function secConvert($seconds) {
     $h = floor($seconds / 3600);
@@ -40,6 +49,7 @@ function secConvert($seconds) {
     <link rel="stylesheet" href="./libs/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="Content-Type" content="text/html" ; charset="utf-8">
+    <script src="./libs/Chart.min.js"></script>
     <style>
     th {
         text-align: center!important;
@@ -84,7 +94,7 @@ function secConvert($seconds) {
                         </thead>
                         <tbody>';
                         foreach (array_reverse($logs)as $log) {
-                            if ($logDate===$log['date']){
+                            if ($log['date']===$logDate){
                                 echo'<tr>
                                 <td class="log_id" style="text-align: center;">'.$log['id'].'</td>
                                 <td class="log_user_id" style="text-align: center;">'.$_SESSION['id'].'</td>
@@ -99,13 +109,69 @@ function secConvert($seconds) {
                             }
                         }
                             echo        '</tbody>
-                            </table>' ;
+                            </table></div>' ;
                     }
                 }
+                try{
+                    $userTasks = getTasksID();//уникальные записи о задачах 1, 2, 3
+                    $intervals = array();
+                    for($i=0; $i<sizeof($userTasks); $i++){
+                        $temp=0;
+                        $logs = R::find( 'logs', ' user_id = ? ', [$_SESSION['id']]);
+                        for ($j=0; $j<sizeof($logs); $j++){ 
+                            if (($logs[$j]['task_id']===$userTasks[$i])&& ($logs[$j]['new_status']==='Running')) {		
+                                    if (($logs[$j+1]['task_id']===$userTasks[$i])) {					                    
+                                        $temp+=($logs[$j+1]['timestamp']-$logs[$j]['timestamp']);  
+                                        // echo "</br>";         
+                                        // print_r($logs[$j]->export());
+                                        // echo "</br>";         
+                                        // print_r($logs[$j+1]->export());
+                                        // echo "</br>";         
+                                        // echo $dayToCompare.': '.$logs[$j]['t_name'].': '.$temp.'</br>';  
+                                    }                
+                                }
+                            }	
+                            array_push($intervals, $temp);
+                        
+                        // echo 'task_id:'.$userTasks[$i].'    ';	
+                        // echo 'counted:'.$intervals[$i].'</br>';
+                        
+                    }
+                    // echo var_dump($intervals);
+                    // echo "</br>";
+                    $rraytest = R::getAll( 'SELECT pr_name, t_name FROM tasks WHERE user_id='.$_SESSION['id']);
+                    //R::getCol( 'SELECT t_name FROM logs;');
+                    //print_r($rraytest);
+                    // print_r(json_encode($rraytest));
+                    $labelsX="";
+                    foreach ($rraytest as $t) {
+                        $labelsX .= '"'.$t['pr_name'].' / '.$t['t_name'].'", ';
+                    }
+                    $labelsX.='"Unused time"';
+                    $temp=0;
+                    $labelsY="";
+                    foreach ($intervals as $interval) {
+                        $temp+=$interval;
+                        $labelsY .= ''.$interval.', ';
+                    }
+                    $labelsY.=''.(800-$temp).'';
+                }
+                catch(Exception $e){
+                    //echo '<div style = "color:red;">'."Task failed!".'</div><hr>';
+                    //var_dump($task);
+                    echo "$e";
+                  }
                     ?>
             <?php else: ?>
     <?="You are not autorized. Go to <a href=\"./login\">Login Page.</a> ";?>
     <?php endif; ?>
+    <?php
+
+
+    ?>
+    <div class='col-md-6' >
+    <canvas id="pie-chart" width="800" height="450"></canvas>
+    </div>
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="./libs/jquery-3.3.1.min.js"></script>
@@ -113,343 +179,25 @@ function secConvert($seconds) {
     <script src="./libs/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <script type="text/javascript">
     <!--
-    window.onload = init();
-
-    function currentTime(info) {
-        
-        let currentDate = new Date();
-        let now = Date.now();
-        let date = currentDate.getDate();
-        if (date < 10) { date = '0' + date; }
-        let month = currentDate.getMonth() + 1; //Be careful! January is 0 not 1
-        if (month < 10) { month = '0' + month; }
-        return '<span class="' + info + '" style="display: none">' + (((now - now % 1000) / 1000) - 1) + "</span>" + currentDate.toTimeString().substring(0, 8) + " " + date + "." + month + "." + currentDate.getFullYear();
-    }
-
-    function hmsToSec(hmsString) {
-        
-        var q = hmsString.split(':'); // split it at the colons
-        return seconds = (+q[0]) * 60 * 60 + (+q[1]) * 60 + (+q[2]);
-        
-    }
-
-    function timeToSec(i) {
-        //counts time_used in secs for easy synchronization
-        let timeCounted = document.getElementsByClassName('time_counted_sec');
-        timeCounted[i].innerHTML = Number(timeCounted[i].innerHTML) + 1;
-    }
-
-    function convertToSync(index) {
-        
-        let id = document.getElementsByClassName("task_id");
-        let userId = document.getElementById("userId");
-        let prName = document.getElementsByClassName("project_name");
-        let tName = document.getElementsByClassName("task_name");
-        let tDesc = document.getElementsByClassName("task_desc");
-        let tStatus = document.getElementsByClassName('status_code');
-        let timeCounted = document.getElementsByClassName("time_counted_sec");
-        let tCreated = document.getElementsByClassName("created_timestamp");
-        let tFinished = document.getElementsByClassName("finished_timestamp")
-        let tPaused = document.getElementsByClassName("paused_timestamp");
-        let tResumed = document.getElementsByClassName("resumed_timestamp");
-        let tasksData = [];
-        for (let index = 0; index < tName.length; index++) {
-            tasksData.push({
-                "id" : id[index].innerHTML,
-                "userId" : userId.innerHTML,
-                "prName" : prName[index].innerHTML,
-                "tName" : tName[index].innerHTML,
-                "tDesc" : tDesc[index].innerHTML,
-                "tCreated" : tCreated[index].innerHTML,
-                "tFinished" : tFinished[index].innerHTML,
-                "tPaused" : tPaused[index].innerHTML,
-                "timeCounted" : timeCounted[index].innerHTML,
-                "status" : tStatus[index].innerHTML,    
-                "tResumed" : tResumed[index].innerHTML
-            });
+    new Chart(document.getElementById("pie-chart"), {
+        type: 'pie',
+        data: {
+          labels: [<?php echo $labelsX;?>],
+          datasets: [{
+            label: "Population (millions)",
+            backgroundColor: ["#3e95cd", "#8e5ea2","#3cba9f","#e8c3b9","#c45850","#e3b505","#95190c",
+            "#610345","#107e7d","#044b7f","#93b5c6","#ddedaa","#f0cf65","#d7816a","#bd4f6c",
+            "#ee6c4d","#f38d68","#662c91","#17a398","#33312e","#ed1c24","#fdfffc","#235789","#f1d302","#020100"],
+            data: [<?php echo $labelsY;?>]  
+          }]
+        },
+        options: {
+          title: {
+            display: true,
+            text: 'Predicted world population (millions) in 2050'
+          }
         }
-        return tasksData;
-    }
-
-    function convertStatus(i) {
-        
-        let statusMark = document.getElementsByClassName('tasks_status');
-        let statusCode = document.getElementsByClassName('status_code');
-        switch (statusMark[i].innerHTML) {
-            case 'Running':
-                {
-                    statusCode[i].innerHTML = 1;
-                    break;
-                }
-            case 'Paused':
-                {
-                    statusCode[i].innerHTML = 0;
-                    break;
-                }
-            case 'Finished':
-                {
-                    statusCode[i].innerHTML = 2;
-                    break;
-                }
-        }
-    }
-
-    function doSync() {
-        let sendData = convertToSync();
-        $.ajax({
-                method: "POST",
-                url: "services/timeTracker",
-                data: { data: sendData }
-            })
-            .done(function(msg) {
-                console.log(msg);
-        });
-        // $.ajax({
-        //         method: "POST",
-        //         url: "services/sync",
-        //         data: { data: logs }
-        //     })
-        //     .done(function(message) {
-        //         console.log(message);
-        // });
-        
-    }
-
-    function createLog(id, newStatus){
-        let task_id = document.getElementsByClassName("task_id");
-        let user_id = document.getElementById("userId");
-        let prName = document.getElementsByClassName("project_name");
-        let tName = document.getElementsByClassName("task_name");
-        let tDesc = document.getElementsByClassName("task_desc");
-        let tStatus = document.getElementsByClassName('status_code');
-        let timeCounted = document.getElementsByClassName("time_counted_sec");
-
-        let tCreated = document.getElementsByClassName("created_timestamp");
-        let tFinished = document.getElementsByClassName("finished_timestamp")
-        let tPaused = document.getElementsByClassName("paused_timestamp");
-        let tResumed = document.getElementsByClassName("resumed_timestamp");
-        let timestamp;
-        switch (newStatus) {
-            case 'Running':
-                {
-                    timestamp = tResumed[id].innerHTML;
-                    break;
-                }
-            case 'Paused':
-                {
-                    timestamp = tPaused[id].innerHTML;
-                    break;
-                }
-            case 'Finished':
-                {
-                    timestamp = tFinished[id].innerHTML;
-                    break;
-                }
-        }
-        
-        let logRecord = {
-                "user_id" : user_id.innerHTML,
-                "task_id" : task_id[id].innerHTML,
-                "prName" : prName[id].innerHTML,
-                "tName" : tName[id].innerHTML,
-                "newStatus" : newStatus,    
-                "timestamp" : timestamp
-            }
-        return logRecord;
-    }
-
-    var logs = [];
-    function doSyncLog() {
-        //let sendData = convertToSync();
-        //console.log(sendData);
-        $.ajax({
-                method: "POST",
-                url: "services/sync",
-                data: { data: logs }
-            })
-            .done(function(message) {
-                console.log(message);
-        });
-    }
-
-    function timer(string) {
-        
-        //a[2] - sec
-        //a[1] - min
-        //a[0] - hrs
-        var a = string.split(':');
-        a[2] = Number(a[2]);
-        a[1] = Number(a[1]);
-        a[0] = Number(a[0]);
-        if (a[2] >= 59) {
-            a[2] = 0;
-            if (a[1] >= 59) {
-                a[1] = 0;
-                a[0]++;
-            } else { a[1]++; }
-        } else { a[2] += 1; }
-        a[2] = ((a[2] < 10) ? "0" : "") + a[2];
-        a[1] = ((a[1] < 10) ? "0" : "") + a[1];
-        a[0] = (a[0] == 0) ? "0" : a[0];
-        return a[0] + ":" + a[1] + ":" + a[2];
-    }
-
-    function init() {
-        let ctrlBtns = document.getElementsByClassName('ctrl_btn');
-        let status = document.getElementsByClassName('tasks_status');
-        //change button label for Start/Pause button from Continue to Pause if task is running
-        for (let i = 0; i < status.length; i++) {
-            if (status[i].innerHTML === "Running") {
-                ctrlBtns[i].innerHTML = "Pause";
-            }
-        }
-        for (let i = 0; i < ctrlBtns.length; i++) {
-            ctrlBtns[i].addEventListener('click', () => {
-                try {
-                    let status = document.getElementsByClassName('tasks_status');
-                    let tResumed = document.getElementsByClassName('task_resumed');
-                    let tPaused = document.getElementsByClassName('task_paused');
-                    //if task is paused
-                    if (ctrlBtns[i].innerHTML === "Continue") {
-                        //status review
-                        for (let j = 0; j < status.length; j++) {
-                            //if task to resume is chosen, skip it
-                            if (i === j) continue;
-                            else {
-                                //else if status is not finished 
-                                if (status[j].innerHTML === 'Running') {
-                                    //change status of other tasks to Paused and save timestamps
-                                    tPaused[j].innerHTML = currentTime('paused_timestamp');
-                                    status[j].innerHTML = 'Paused';
-                                    ctrlBtns[j].innerHTML = 'Continue';
-                                    convertStatus(j);
-                                    logs = createLog(j,'Paused');
-                                    doSyncLog();
-                                }
-                            }
-                        }
-                        //change status of other tasks to Paused and save timestamps
-                        ctrlBtns[i].innerHTML = "Pause";
-                        status[i].innerHTML = "Running";
-                        tResumed[i].innerHTML = currentTime('resumed_timestamp');
-                        convertStatus(i);
-                        logs = createLog(i,'Running');
-                        doSyncLog();
-                        //pause other active task, if active
-                        // for (let i = 0; i < status.length; i++) {
-                        //     if (status[i].innerHTML === "Running") {
-                        //         ctrlBtns[i].innerHTML = "Pause";
-                        //     }
-                        // }
-                        //********************************
-                        //*СПОРНЫЙ МОМЕНТ ЦИКЛ стр351-355*
-                        //********************************
-                    } else {
-                        //change status of other tasks to Paused and save timestamps
-                        ctrlBtns[i].innerHTML = 'Continue';
-                        status[i].innerHTML = 'Paused';
-                        convertStatus(i);
-                        tPaused[i].innerHTML = currentTime("paused_timestamp");
-
-                        logs = createLog(i,'Paused');
-                        doSyncLog();
-                    }
-                } catch (e) {
-                    console.log(e);
-                }
-            });
-
-        }
-
-        let endBtns = document.getElementsByClassName("end_btn");
-        for (let i = 0; i < endBtns.length; i++) {
-            endBtns[i].addEventListener('click', () => {
-                try {
-                    let status = document.getElementsByClassName('tasks_status');
-                    let ctrlBtns = document.getElementsByClassName("ctrl_btn");
-                    let tFinished = document.getElementsByClassName('task_finished');
-                    //change status  to Finished and save timestamps
-                    tFinished[i].innerHTML = currentTime("finished_timestamp");
-                    status[i].innerHTML = 'Finished';
-                    convertStatus(i);
-                    
-                    logs = createLog(i,'Finished');
-                    doSyncLog();
-
-                    endBtns[i].style.display = 'none';
-                    ctrlBtns[i].style.display = 'none';
-
-                } catch (e) {
-                    console.log(e);
-                }
-            });
-        }
-
-        try {
-            let sButton = document.getElementsByClassName('modify-btn');
-            for (let c = 0; c < sButton.length; c++) {
-                sButton[c].addEventListener('click', () => {
-                    //synchronization code...
-                    // console.log('listener ' + c + ' created');
-                    // console.log(sButton[c].innerHTML + " " + c);
-                    //let s = (c - c % 2) / 2;
-                    //convertStatus((c - c % 2) / 2);
-                    //convertToSync();
-                    let sendData = convertToSync();
-                    //console.log(sendData);
-                    console.log(logs);
-                    doSync();
-                    //doSyncLog();
-                });
-            }
-            // window.addEventListener('unload', function(event) {
-            //     doSync();
-            // });
-        } catch (e) {
-            console.log(e);
-        }
-    }
-    //var noActiveTasks = <?php if(empty($user_tasks)) echo "true"; else echo "false"; ?>
-
-    var timeInterval = setInterval(() => {
-        let status = document.getElementsByClassName('tasks_status');
-        let timers = document.getElementsByClassName("tasks_time");
-        let ctrlBtns = document.getElementsByClassName("ctrl_btn");
-        //let activeTasks = 0;
-
-        for (var i = 0; i < status.length; i++) {
-            if (status[i].innerHTML === "Running") {
-                //activeTasks++;
-                timers[i].innerHTML = timer(timers[i].innerHTML);
-                timeToSec(i);
-            }
-        }
-        // if ((activeTasks === 0) || (noActiveTasks)) {
-        //     document.getElementById('pauseButton').style.display = 'none';
-        // } else {
-        //     document.getElementById('pauseButton').style.display = 'inline';
-        // }
-    }, 1000);
-
-    var currentTimeInterval = setInterval(() => {
-        let systemTime = document.getElementById('current_time');
-        systemTime.innerHTML = currentTime("systemTime");
-
-    }, 1000);
-
-    function pauseTasks() {
-        let status = document.getElementsByClassName("tasks_status");
-        let ctrlBtns = document.getElementsByClassName("ctrl_btn");
-        for (i = 0; i < status.length; i++) {
-            status[i].innerHTML = "Paused";
-            convertStatus(i);
-            ctrlBtns[i].innerHTML = "Continue";
-            //     if (ctrlBtns[i].classList.contains('btn-warning')){
-            // ctrlBtns[i].classList.remove('btn-warning');
-            // ctrlBtns[i].classList.add('btn-info');
-            // }
-        }
-    }
+    });
     -->
     </script>
 </body>

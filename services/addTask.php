@@ -43,8 +43,8 @@ try{
         $logRecord->tName = $task['tName'];
         $logRecord->newStatus =  'Created';
         $logRecord->timestamp = $task['tCreated'];
-        $log->time = returnTime($log->timestamp);
-        $log->date = returnDate($log->timestamp);
+        $logRecord->time = returnTime($logRecord->timestamp);
+        $logRecord->date = returnDate($logRecord->timestamp);
         R::store($logRecord);
     }
         //echo '<meta http-equiv="Refresh" content="2; url=./tasks">';

@@ -57,6 +57,10 @@ if (isset($_POST['submit'])) {
     <a href="/">Main Page</a><br>
     <? if($_SESSION["email"]) : ?>
     <?="    You are autorized as ".$_SESSION['email'].".<br>    Go to <a href=\"/user\">Settings</a>, if you want to change something.";?>
+    <?php 
+    header("Location: ../");
+    exit;
+    ?>
     <? else : ?>
     <form id="loginForm" class="form-horizontal container" action="./login" method="POST">
         <div class="input-group col-sm-4">
@@ -78,3 +82,5 @@ if (isset($_POST['submit'])) {
 </body>
 
 </html>
+
+

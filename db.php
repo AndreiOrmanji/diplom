@@ -1,6 +1,6 @@
 <?php 
 session_start();
-require 'rb.php';
+require_once 'rb.php';
 R::setup( 'mysql:host=localhost;dbname=users',
-        'root', '' ); //for both mysql or mariaDB
+        'root', '123456' ); //for both mysql or mariaDB
 ?>

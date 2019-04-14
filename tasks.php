@@ -118,7 +118,6 @@ function secConvert($seconds) {
             foreach (array_reverse($user_tasks)as $t) {
                 switch ($t['status']) {
                     case '1':
-                        
                         $status="Running";
                         $t['timeCounted']=$t['timeCounted']+($timeNow-$t['tResumed']);
                         break;
@@ -131,7 +130,7 @@ function secConvert($seconds) {
                         $status="Finished";
                         break;
                 }
-                echo'<tr>
+                echo '<tr>
                     <td class="project_name" style="text-align: center;">'.$t['prName'].'</td>
                     <td class="task_name" style="text-align: center;">'.$t['tName'].'</td>
                     <td class="task_desc">'.$t['tDesc'].'</td>
@@ -156,8 +155,8 @@ function secConvert($seconds) {
             }
             echo        '</tbody>
                     </table>' ;
-            // echo '<table class="table-hidden" style="display:none">
-    // <tbody>';
+        // echo '<table class="table-hidden" style="display:none">
+        // <tbody>';
         // foreach ($user_tasks as $t) {
         // echo '<tr>
             // <td class="time_counted_sec">'.$t['timeCounted'].'</td>
@@ -169,8 +168,7 @@ function secConvert($seconds) {
             // </tr>';
         // }
         // echo'</tbody>
-    // </table>' ;
-
+        // </table>' ;
         }
         // echo'<div>
         //         <button name="stopResponseButton" type="button" class="btn btn-warning btn-lg" 
@@ -197,7 +195,8 @@ function secConvert($seconds) {
         if (date < 10) { date = '0' + date; }
         let month = currentDate.getMonth() + 1; //Be careful! January is 0 not 1
         if (month < 10) { month = '0' + month; }
-        return '<span class="' + info + '" style="display: none">' + (((now - now % 1000) / 1000) - 1) + "</span>" + currentDate.toTimeString().substring(0, 8) + " " + date + "." + month + "." + currentDate.getFullYear();
+        return '<span class="' + info + '" style="display: none">' + (((now - now % 1000) / 1000)) + 
+            "</span>" + currentDate.toTimeString().substring(0, 8) + " " + date + "." + month + "." + currentDate.getFullYear();
     }
 
     function hmsToSec(hmsString) {
@@ -494,6 +493,7 @@ function secConvert($seconds) {
         for (var i = 0; i < status.length; i++) {
             if (status[i].innerHTML === "Running") {
                 //activeTasks++;
+
                 timers[i].innerHTML = timer(timers[i].innerHTML);
                 timeToSec(i);
             }
