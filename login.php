@@ -58,8 +58,7 @@ if (isset($_POST['submit'])) {
     <? if($_SESSION["email"]) : ?>
     <?="    You are autorized as ".$_SESSION['email'].".<br>    Go to <a href=\"/user\">Settings</a>, if you want to change something.";?>
     <?php 
-    header("Location: ../");
-    exit;
+    
     ?>
     <? else : ?>
     <form id="loginForm" class="form-horizontal container" action="./login" method="POST">
