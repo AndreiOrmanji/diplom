@@ -24,6 +24,7 @@
         <li><a href="./login">Autorization</a></li>
         <li><a href="./signup">Registration</a></li>
         <li><a href="./tasks">Tasks</a></li>
+        <li><a href="./stats">Stats</a></li>
         <?php  
         	echo "$autorized";
         ?>

@@ -5,7 +5,7 @@ require_once './db.php';
       if (($tResumed===NULL) || ($tResumed===0) || ($tResumed==="")) {       
           return "-----";
       } else {
-          return date("d-m-Y", $tResumed);
+          return date("Y-m-d", $tResumed);
       }
   }
   

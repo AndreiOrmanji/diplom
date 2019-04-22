@@ -96,8 +96,8 @@ function getProjects (){
         //II. расчеты для 2 графика по неделям
         $day = date('w');
         $currentWeek=array();
-        $firstDay =  date("Y-m-d", strtotime('monday this week'));   
-        $lastDay =  "2019-04-13";//date("Y-m-d", strtotime('sunday this week'));
+        $firstDay =  date("Y-m-d", strtotime('2019-04-08'));   
+        $lastDay =  "2019-04-14";//date("Y-m-d", strtotime('sunday this week'));
         $logWeek = R::find( 'logs', ' user_id = ? AND date >= ? AND date <= ?',  [$_SESSION['id'], $firstDay, $lastDay]);
         $TasksID = getTasksID();//уникальные записи о задачах 1, 2, 3
         $wDays = getWeekDays($firstDay, $lastDay);
@@ -166,6 +166,7 @@ function getProjects (){
             display: true,
             text: 'Распределение времени по задачам'
           }
+          
         }
     });
 
@@ -207,6 +208,7 @@ function getProjects (){
         display: true,
         text: 'Predicted world population (millions) in 2050'
       }
+      
     }
 });
     -->

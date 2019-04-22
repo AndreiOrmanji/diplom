@@ -60,24 +60,30 @@ function secConvert($seconds) {
 <body>
     <a href="./">Main Page</a><br>
     <?php if($_SESSION['email']) : ?>
-    <?="You are using, ". $_SESSION['email'] ." as your e-mail adress.";?>
-    <div></div>
+    <?='<div class="container>You are using, '. $_SESSION['email'] .' as your e-mail adress.</div>'
+    ;?>
     <?php
+        try{
     $timeNow = time();
-    echo '<div>Tracking starts at '.date("H:i:s", time()).'('.time().')</div>';
-    echo '<div>Current Time: <span id="current_time"></span></div>';
+    echo '<div>Tracking starts at '.date("H:i:s", time()).'('.time().')</div>
+        <div>Current Time: <span id="current_time"></span></div>';
     $logs = R::find( 'logs', ' user_id = ? ',  [$_SESSION['id']]);
     //echo print_r($logs);
     if(empty($logs)) echo "No activity by ".$_SESSION['email'].".";
         else{
-            $dateArray = R::getCol( 'SELECT DISTINCT date FROM logs;' );
+            $dateArray = R::getCol( 'SELECT DISTINCT date FROM logs;' );            
+            // foreach ($dateArray as $day){
+            //     $logs = R::find( 'logs', ' user_id = ? and date = ?',  [$_SESSION['id'],$date]);
+            //     echo '<script>console.log('.print_r($logs->export()).');</script>';
+            // }
             foreach ($dateArray as $logDate) {
                 # code...
                 
-                echo '<div class="container">';
-                echo 'Table for '.$logDate.'
-                <h6>Current tasks of user <strong><i>'.$_SESSION['email'].'</i></strong></h6>
-                <span id="userId" style="display:none;">'.$_SESSION['id'].'</span>
+                
+                echo '
+                <div class="container">
+                <details>
+                <summary>Table for '.$logDate.'</summary>
                 <table class="table">    
                         <thead>
                         <tr>
@@ -109,10 +115,9 @@ function secConvert($seconds) {
                             }
                         }
                             echo        '</tbody>
-                            </table></div>' ;
+                            </table></div></details>' ;
                     }
                 }
-                try{
                     $userTasks = getTasksID();//уникальные записи о задачах 1, 2, 3
                     $intervals = array();
                     for($i=0; $i<sizeof($userTasks); $i++){
@@ -140,9 +145,6 @@ function secConvert($seconds) {
                     // echo var_dump($intervals);
                     // echo "</br>";
                     $rraytest = R::getAll( 'SELECT pr_name, t_name FROM tasks WHERE user_id='.$_SESSION['id']);
-                    //R::getCol( 'SELECT t_name FROM logs;');
-                    //print_r($rraytest);
-                    // print_r(json_encode($rraytest));
                     $labelsX="";
                     foreach ($rraytest as $t) {
                         $labelsX .= '"'.$t['pr_name'].' / '.$t['t_name'].'", ';
@@ -154,7 +156,60 @@ function secConvert($seconds) {
                         $temp+=$interval;
                         $labelsY .= ''.$interval.', ';
                     }
+                    //print_r($dateArray[$i]);
                     $labelsY.=''.(800-$temp).'';
+                    $intervals = array();
+                    foreach($dateArray as $day){
+                        $temp=0;
+                        $sql = "select * from logs where date = '".$day."'";
+                        $rows = R::getAll( $sql );
+                        //echo '<pre>'.print_r($rows).'</pre>';
+                        //$logs = R::convertToBeans( 'logs', $rows );
+                        //$logs = R::get( 'logs', ' user_id = ? and date = ?',  [$_SESSION['id'],'2019-04-14']);
+                        //echo '<script>console.log('.print_r($logs->export()).');</script>';
+                        //echo sizeof($logs);
+                        for ($j=1; $j<sizeof($rows); $j++){ 
+                            if ( ($rows[$j]['new_status']==='Running')) {		
+                                         echo "</br>j=".$j." status:".$rows[$j]['new_status'];
+                                 for ($k=$j-1; $k >= 0; $k--) { 
+                                     echo "</br>k=".$k;
+                                     if ($rows[$k]['new_status']!=='Paused') {
+                                            echo "skipped";
+                                            continue;
+                                     } 
+                                         else{
+                                        //echo " status:".$rows[$k]['new_status']." ".($rows[$j]['timestamp']-$rows[$k]['timestamp'])."</br>";
+                                         $temp+=($rows[$j]['timestamp']-$rows[$k]['timestamp']);
+                                         break;
+                                //         echo "</br>";         
+                                //         print_r($rows[$j]->export());
+                                //         echo "</br>";         
+                                //         print_r($rows[$k]->export());
+                                //         echo "</br>";         
+                                //         echo '2019-04-14: '.$temp.'</br>';  
+                                         }
+                                  }                  
+                            }                
+                        }
+                        array_push($intervals, $temp);  
+                        print_r($intervals);
+
+                    }	
+                    
+                    $temp="";
+                    $labelsXDays="";
+                    foreach ($dateArray as $date) {
+                        //$temp+=$date;
+                        $labelsXDays .= '"'.$date.'", ';
+                        echo $date;
+                    }
+                    $temp=0;
+                    $labelsYDays="";
+                    foreach ($intervals as $interval) {
+                        $temp+=$interval;
+                        $labelsYDays .= ''.$interval.', ';
+                    }
+
                 }
                 catch(Exception $e){
                     //echo '<div style = "color:red;">'."Task failed!".'</div><hr>';
@@ -166,11 +221,22 @@ function secConvert($seconds) {
     <?="You are not autorized. Go to <a href=\"./login\">Login Page.</a> ";?>
     <?php endif; ?>
     <?php
-
-
+    // $logs = R::find( 'logs', ' user_id = ? and date = ?',  [$_SESSION['id'],$dateArray[$i]]);
+    // print_r($logs->export());
     ?>
+
+<div class="container">
+  <div class='row' >
     <div class='col-md-6' >
-    <canvas id="pie-chart" width="800" height="450"></canvas>
+      <canvas id="pie-chart-all-tasks" width="450" height="350"></canvas>
+    </div>
+    <div class='col-md-12' >
+      <canvas id="bar-chart-by-pauses" width="450" height="150"></canvas>
+    </div>
+  </div>
+</div>
+
+    
     </div>
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
@@ -179,12 +245,33 @@ function secConvert($seconds) {
     <script src="./libs/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <script type="text/javascript">
     <!--
-    new Chart(document.getElementById("pie-chart"), {
+    new Chart(document.getElementById("bar-chart-by-pauses"), {
+    type: 'bar',
+    data: {
+      labels: [<?php echo $labelsXDays;?>],
+      datasets: [
+        {
+          label: "секунд",
+          backgroundColor: ["#3e95cd", "#8e5ea2","#3cba9f","#e8c3b9","#c45850","#f1d302","#020100"],
+          data: [<?php echo $labelsYDays;?>]
+        }
+      ]
+    },
+    options: {
+      legend: { display: true },
+      title: {
+        display: true,
+        text: 'Pauses (secs)'
+      }
+    }
+    });
+    
+    new Chart(document.getElementById("pie-chart-all-tasks"), {
         type: 'pie',
         data: {
           labels: [<?php echo $labelsX;?>],
           datasets: [{
-            label: "Population (millions)",
+            label: "секунд",
             backgroundColor: ["#3e95cd", "#8e5ea2","#3cba9f","#e8c3b9","#c45850","#e3b505","#95190c",
             "#610345","#107e7d","#044b7f","#93b5c6","#ddedaa","#f0cf65","#d7816a","#bd4f6c",
             "#ee6c4d","#f38d68","#662c91","#17a398","#33312e","#ed1c24","#fdfffc","#235789","#f1d302","#020100"],
@@ -194,7 +281,7 @@ function secConvert($seconds) {
         options: {
           title: {
             display: true,
-            text: 'Predicted world population (millions) in 2050'
+            text: 'Распределение времени по задачам'
           }
         }
     });
