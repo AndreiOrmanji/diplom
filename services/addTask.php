@@ -23,7 +23,7 @@ try{
         //echo '<pre>'.var_dump($_POST['submit']).'</pre>';
         $task = R::dispense ('tasks');
         $task->userId = $_SESSION["id"];                                        //user id
-        $task->prName = (empty($_POST['prname'])) ? 'Others tasks' : $_POST['prname'];    //project name
+        $task->prName = ($_POST['prname']==='Choose from existing projects') ? 'Others tasks' : $_POST['prname'];    //project name
         $task->tName = $_POST['tname'];                                         //task name
         $task->tDesc = $_POST['tdesc'];                                         //description
         $task->tCreated=time();  

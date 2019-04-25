@@ -25,7 +25,7 @@ function getTasksID (){
 }
 
 function getProjects (){
-    return R::getCol( 'SELECT DISTINCT pr_name FROM logs WHERE user_id='.$_SESSION['id'] );
+    return R::getCol( 'SELECT DISTINCT project_id FROM logs WHERE user_id='.$_SESSION['id'] );
     //return $array = print_r($array);
 }
 
@@ -77,9 +77,6 @@ function secConvert($seconds) {
             //     echo '<script>console.log('.print_r($logs->export()).');</script>';
             // }
             foreach ($dateArray as $logDate) {
-                # code...
-                
-                
                 echo '
                 <div class="container">
                 <details>
@@ -99,7 +96,7 @@ function secConvert($seconds) {
                         </tr>
                         </thead>
                         <tbody>';
-                        foreach (array_reverse($logs)as $log) {
+                        foreach (array_reverse($logs) as $log) {
                             if ($log['date']===$logDate){
                                 echo'<tr>
                                 <td class="log_id" style="text-align: center;">'.$log['id'].'</td>
@@ -149,7 +146,7 @@ function secConvert($seconds) {
                     foreach ($rraytest as $t) {
                         $labelsX .= '"'.$t['pr_name'].' / '.$t['t_name'].'", ';
                     }
-                    $labelsX.='"Unused time"';
+                    //$labelsX.='"Unused time"';
                     $temp=0;
                     $labelsY="";
                     foreach ($intervals as $interval) {
@@ -157,7 +154,7 @@ function secConvert($seconds) {
                         $labelsY .= ''.$interval.', ';
                     }
                     //print_r($dateArray[$i]);
-                    $labelsY.=''.(800-$temp).'';
+                    //$labelsY.=''.(800-$temp).'';
                     $intervals = array();
                     foreach($dateArray as $day){
                         $temp=0;
