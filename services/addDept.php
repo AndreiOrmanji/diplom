@@ -21,37 +21,35 @@ try{
     ob_start();
     if ( isset($_POST['submit']) && ($_SESSION["id"]!=NULL) ) {
         //echo '<pre>'.var_dump($_POST['submit']).'</pre>';
-        $project = R::dispense ('projects');
-        $project->user_id = $_SESSION["id"];                                        
-        $project->pr_name = $_POST['prname'];    
-        $project->pr_desc = $_POST['prdesc']; 
-        $project->client = $_POST['client'];                                         
-        $project->pr_created=time();  
-        $project->pr_finished=NULL;                                                  
-        $project_id = R::store( $project );
-        $project = R::load( 'projects', $project_id);
+        $dept = R::dispense ('depts');
+        $dept->user_id = $_SESSION["id"];                                        
+        $dept->dept_name = $_POST['dept_name'];   
+        $tmp = explode("|",$_POST['head_id'],2); 
+        $dept->head_id = $tmp[0]; 
+        $dept_id = R::store( $dept );
+        //$dept = R::load( 'clients', $dept_id);
         // $logRecord = R::dispense ('project_logs');
-        // $logRecord->userId = $project['userId'];
-        // $logRecord->taskId = $project['id'];
-        // $logRecord->prName = $project['prName'];
+        // $logRecord->userId = $dept['userId'];
+        // $logRecord->taskId = $dept['id'];
+        // $logRecord->prName = $dept['prName'];
         // $logRecord->newStatus =  'Created';
-        // $logRecord->timestamp = $project['tCreated'];
+        // $logRecord->timestamp = $dept['tCreated'];
         // $logRecord->time = returnTime($logRecord->timestamp);
         // $logRecord->date = returnDate($logRecord->timestamp);
         // R::store( $logRecord );
     }
-        //echo '<meta http-equiv="Refresh" content="2; url=./projects">';
+        //echo '<meta http-equiv="Refresh" content="2; url=./clients">';
         //echo '';
-        header("Location: ../tasks2");
+        header("Location: ../depts");
         exit;
         // foreach($_POST as $key => $value){
         //     $_POST[$key]='';
         // }        
-        //var_dump($project);
+        //var_dump($dept);
     
 }
 catch(Exception $e){
     echo '<div style = "color:red;">'."Task failed!".'</div><hr>';
-    echo '<pre>'.var_dump($project).'</pre>';
+    echo '<pre>'.var_dump($dept).'</pre>';
     echo "$e";
 }

@@ -15,6 +15,10 @@ if (isset($_POST['submit'])) {
             if ($user['pass'] === md5(md5($_POST['pass']))) {
                 $_SESSION["email"] = $user['email'];
                 $_SESSION["id"] = $user['id'];
+                $_SESSION["admin"] = $user['is_admin'];
+                $_SESSION["head"] = $user['is_head'];
+                $_SESSION["dept_id"] = $user['dept_id'];
+                header("Location: ./");
                 //echo $_SESSION["email"];
                 //echo "Session variables are set.";
                 //echo '<div style = "color:green;">'."Success!".'</div><hr>';
@@ -37,7 +41,7 @@ if (isset($_POST['submit'])) {
 <head>
     <meta charset="UTF-8">
     <title>Log in</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="./libs/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <style type="text/css">
     body,
     html {

@@ -22,34 +22,34 @@ try{
     if ( isset($_POST['submit']) && ($_SESSION["id"]!=NULL) ) {
         //echo '<pre>'.var_dump($_POST['submit']).'</pre>';
         $task = R::dispense ('tasks');
-        $task->userId = $_SESSION["id"];                                        //user id
-        $task->prName = ($_POST['prname']==='Choose from existing projects') ? 'Others tasks' : $_POST['prname'];    //project name
-        $task->tName = $_POST['tname'];                                         //task name
-        $task->tDesc = $_POST['tdesc'];                                         //description
-        $task->tCreated=time();  
+        $task->user_id = $_SESSION["id"];
+        $piece = explode(".",$_POST['prname']);                                     //user id
+        $task->project_id = ($piece[0]==='Choose from existing projects') ? 0 : $piece[0];    //project name
+        $task->t_name = $_POST['tname'];                                         //task name
+        $task->t_desc = $_POST['tdesc'];                                         //description
+        $task->t_created=time();  
         //task created
-        $task->tFinished=NULL;                                                  //task finished
-        $task->tPaused=NULL;
-        $task->timeCounted = 0;                                                 //time already counted
+        $task->t_finished=NULL;                                                  //task finished
+        $task->t_paused=NULL;
+        $task->time_counted = 0;                                                 //time already counted
         $task->status = 0; 
         //task is stopped
-        $task->tResumed = NULL;
+        $task->t_resumed = NULL;
         $task_id = R::store( $task );
         $task = R::load( 'tasks', $task_id);
         $logRecord = R::dispense ('logs');
-        $logRecord->userId = $task['userId'];
-        $logRecord->taskId = $task['id'];
-        $logRecord->prName = $task['prName'];
-        $logRecord->tName = $task['tName'];
+        $logRecord->user_id = $task['user_id'];
+        $logRecord->task_id = $task['id'];
+        $logRecord->project_id = $task['project_id'];
         $logRecord->newStatus =  'Created';
-        $logRecord->timestamp = $task['tCreated'];
+        $logRecord->timestamp = $task['t_created'];
         $logRecord->time = returnTime($logRecord->timestamp);
         $logRecord->date = returnDate($logRecord->timestamp);
         R::store($logRecord);
     }
         //echo '<meta http-equiv="Refresh" content="2; url=./tasks">';
         //echo '';
-        header("Location: ../tasks");
+        header("Location: ../tasks2");
         exit;
         // foreach($_POST as $key => $value){
         //     $_POST[$key]='';
@@ -62,4 +62,3 @@ catch(Exception $e){
     var_dump($task);
     echo "$e";
 }
-?>

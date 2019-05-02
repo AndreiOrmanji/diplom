@@ -22,8 +22,8 @@ try{
     if ( isset($_POST['submit']) && ($_SESSION["id"]!=NULL) ) {
         //echo '<pre>'.var_dump($_POST['submit']).'</pre>';
         $client = R::dispense ('clients');
-        $client->userId = $_SESSION["id"];                                        
-        $client->clientName = $_POST['client_name'];    
+        $client->user_id = $_SESSION["id"];                                        
+        $client->client_name = $_POST['client_name'];    
         $client->email = $_POST['email']; 
         $client->phone = $_POST['phone'];                                                                                        
         $client_id = R::store( $client );
@@ -40,7 +40,7 @@ try{
     }
         //echo '<meta http-equiv="Refresh" content="2; url=./clients">';
         //echo '';
-        header("Location: ../tasks");
+        header("Location: ../tasks2");
         exit;
         // foreach($_POST as $key => $value){
         //     $_POST[$key]='';
@@ -53,4 +53,3 @@ catch(Exception $e){
     echo '<pre>'.var_dump($client).'</pre>';
     echo "$e";
 }
-?>
