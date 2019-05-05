@@ -1,7 +1,7 @@
 <?php
 require_once 'db.php';
 $depts = R::getAll('SELECT dept_name, id FROM depts');
-$users = R::getAll('SELECT email, id FROM users where dept_id is not null');
+$users = R::getAll('SELECT email, id, dept_id FROM users where dept_id is not null');
 
 ?>
 <html>
@@ -32,10 +32,11 @@ $users = R::getAll('SELECT email, id FROM users where dept_id is not null');
         foreach ($depts as $dept) {
             $user = R::find('users', ' dept_id = ? ',  [$dept['id']]);
             #echo '<pre>'.print_r($user).'</pre>';
+            $opened = ($_SESSION["dept_id"]===$dept["id"])?" open": ""; 
             echo '
                 <div class="container">
-                <details open>
-                <summary> ' . $dept['dept_name'] . ' :</summary>
+                <details'.$opened.'>
+                <summary> ' . $dept['dept_name'] . ':</summary>
                 <table class="table">    
                         <thead>
                         <tr>
@@ -74,9 +75,9 @@ $users = R::getAll('SELECT email, id FROM users where dept_id is not null');
                             <td class="is_head">' . $head_mark . '</td>
                           </tr>';
             }
+            echo        '</tbody>
+                    </table></div></details>';
         }
-        echo        '</tbody>
-                </table></div></details>';
     }
     ?>
     <div class="container">

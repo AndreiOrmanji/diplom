@@ -233,7 +233,7 @@ function secConvert($seconds)
                 <input class="inputDate" id="inputDate" value="" size="30" readonly/>
                 <!--
                 <label id="closeOnSelect"><input type="checkbox"> Close on selection</label>
-                -->
+                    -->
             </p>
 
             <div class='col-md-12'>
