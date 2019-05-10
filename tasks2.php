@@ -37,6 +37,21 @@ function secConvert($seconds)
     th {
         text-align: center !important;
     }
+
+    input:invalid {
+        color: red;
+        /* turn to red as long as pattern do not match */
+    }
+
+    input:invalid+b:before {
+        content: 'Invalid price';
+        /* add text untill patterns matches */
+    }
+
+    input:invalid+b+[type="submit"] {
+        display: none;
+        /* hide input submit untill pattern matches */
+    }
     </style>
 </head>
 
@@ -58,7 +73,7 @@ function secConvert($seconds)
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Create new task</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">New task creation</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -85,16 +100,29 @@ function secConvert($seconds)
                         </div>
                         <div class="form-group">
                             <label for="tname">Task name:</label>
-                            <input id="tname" class="form-control" name="tname" required type="text"
-                                placeholder="Task name" value="" required>
+                            <input id="tname" class="form-control" name="tname" type="text" placeholder="Task name"
+                                value="" required>
                         </div>
                         <div class="form-group">
                             <label for="tdesc">Task description:</label>
                             <textarea id="tdesc" class="form-control" name="tdesc" rows="4" placeholder="Optional"
                                 value=""></textarea>
                         </div>
-                        <button id="button" class="btn btn-success btn-block" name="submit" type="submit">Create
-                            task!</button>
+                        <div class="form group form-check form-check-inline form-control">
+                            <label class="form-check-label form-control" for="trigger">Is billable?</label>
+                            <input class="form-check-input form-control" type="checkbox" id="trigger"
+                                name="is_billable">
+                        </div>
+                        <div id="hidden_field" class="form-group">
+                            <input id="hidden_field1" class="form-control" name="price" type="text"
+                                pattern="/^((\d{1,3}|\s*){1})((\,\d{3}|\d)*)(\s*|\.(\d{1,2}))$" />
+                            <label id="hidden_field" class="form-control" for="hidden_field">$ per
+                                hour</label>
+                        </div>
+                        <div class="container">
+                            <button id="button" class="btn btn-success btn-block" name="submit" type="submit">Create
+                                task!</button>
+                        </div>
                         <div class="result">
                             <span id="answer"></span>
                         </div>
@@ -283,6 +311,7 @@ function secConvert($seconds)
     <script type="text/javascript">
     var logs;
     window.onload = init();
+
     function currentTime(info) {
 
         let currentDate = new Date();
@@ -314,7 +343,6 @@ function secConvert($seconds)
     }
 
     function convertToSync(index) {
-
         let id = document.getElementsByClassName("task_id");
         let prName = document.getElementsByClassName("project_name");
         let projectId = document.getElementsByClassName("project_id");
@@ -326,9 +354,9 @@ function secConvert($seconds)
         let tFinished = document.getElementsByClassName("finished_timestamp")
         let tPaused = document.getElementsByClassName("paused_timestamp");
         let tResumed = document.getElementsByClassName("resumed_timestamp");
-        let tasksData = [];
+        let sendData = [];
         for (let index = 0; index < tName.length; index++) {
-            tasksData.push({
+            sendData.push({
                 "id": id[index].innerHTML,
                 "userId": '<?php echo $_SESSION['id'] ?>',
                 "projectId": projectId[index].innerHTML,
@@ -343,7 +371,7 @@ function secConvert($seconds)
                 "tResumed": tResumed[index].innerHTML
             });
         }
-        return tasksData;
+        return sendData;
     }
 
     function convertStatus(i) {
@@ -386,9 +414,9 @@ function secConvert($seconds)
 
     function createLog(id, newStatus) {
         let projectId = document.getElementsByClassName("project_id");
-      //let prName = document.getElementsByClassName("project_name");
+        //let prName = document.getElementsByClassName("project_name");
         let task_id = document.getElementsByClassName("task_id");
-      //let tName = document.getElementsByClassName("task_name");
+        //let tName = document.getElementsByClassName("task_name");
         let tDesc = document.getElementsByClassName("task_desc");
         let tStatus = document.getElementsByClassName('status_code');
         let timeCounted = document.getElementsByClassName("time_counted_sec");
@@ -418,8 +446,8 @@ function secConvert($seconds)
             "user_id": '<?php echo $_SESSION['id'] ?>',
             "task_id": task_id[id].innerHTML,
             "project_id": projectId[id].innerHTML,
-          //"prName": prName[id].innerHTML,
-          //"tName": tName[id].innerHTML,
+            //"prName": prName[id].innerHTML,
+            //"tName": tName[id].innerHTML,
             "newStatus": newStatus,
             "timestamp": timestamp
         }
@@ -619,6 +647,48 @@ function secConvert($seconds)
             // }
         }
     }
+
+    $(function() {
+
+        // Get the form fields and hidden div
+        var checkbox = $("#trigger");
+        var hidden = $("#hidden_field");
+        var populate = $("#populate");
+        var hidden1 = $("#hidden_field1");
+
+        // Hide the fields.
+        // Use JS to do this in case the user doesn't have JS 
+        // enabled.
+        hidden.hide();
+
+        // Setup an event listener for when the state of the 
+        // checkbox changes.
+        checkbox.change(function() {
+            // Check to see if the checkbox is checked.
+            // If it is, show the fields and populate the input.
+            // If not, hide the fields.
+            if (checkbox.is(':checked')) {
+                // Show the hidden fields.
+                hidden.show();
+                hidden1.attr("required", true);
+            } else {
+                // Make sure that the hidden fields are indeed
+                // hidden.
+                hidden.hide();
+                hidden1.attr("required", false);
+                hidden1.val("");
+                // You may also want to clear the value of the 
+                // hidden fields here. Just in case somebody 
+                // shows the fields, enters data to them and then 
+                // unticks the checkbox.
+                //
+                // This would do the job:
+                //
+                // $("#hidden_field").val("");
+
+            }
+        });
+    });
     </script>
 </body>
 

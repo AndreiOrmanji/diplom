@@ -15,8 +15,8 @@ if (isset($_POST['submit'])) {
             if ($user['pass'] === md5(md5($_POST['pass']))) {
                 $_SESSION["email"] = $user['email'];
                 $_SESSION["id"] = $user['id'];
-                $_SESSION["admin"] = $user['is_admin'];
-                $_SESSION["head"] = $user['is_head'];
+                $_SESSION["is_admin"] = $user['is_admin'];
+                $_SESSION["is_head"] = $user['is_head'];
                 $_SESSION["dept_id"] = $user['dept_id'];
                 header("Location: ./");
                 //echo $_SESSION["email"];
@@ -41,7 +41,8 @@ if (isset($_POST['submit'])) {
 <head>
     <meta charset="UTF-8">
     <title>Log in</title>
-    <link rel="stylesheet" href="./libs/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="./libs/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <style type="text/css">
     body,
     html {
@@ -85,5 +86,3 @@ if (isset($_POST['submit'])) {
 </body>
 
 </html>
-
-

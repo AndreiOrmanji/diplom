@@ -51,10 +51,5 @@ for (let i=1;i<arr.length-1;i++){
 }
 console.log(arr);
 console.log(ctr);
-https://youtu.be/1IuUR7iy5iU
-
-
-https://vk.com/id234812677
-https://clips.twitch.tv/CulturedPolishedBibimbapCoolCat?tt_content=chat_card&tt_medium=twitch_chat
 */
 ?>

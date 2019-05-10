@@ -2,31 +2,32 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <style>
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
     }
 
-    #chartdiv, #chartdiv2 {
-      width: 100%;
-      height: 40vh;
-      max-height: 600px;
+    #chartdiv,
+    #chartdiv2 {
+        width: 50vw;
+        height: 500px;
+
     }
-  </style>
-  <title>Document</title>
-  <script src="//www.amcharts.com/lib/4/core.js"></script>
-  <script src="//www.amcharts.com/lib/4/charts.js"></script>
-  <script src="https://www.amcharts.com/lib/4/themes/dataviz.js"></script>
-  <script src="//www.amcharts.com/lib/4/themes/animated.js"></script>
+    </style>
+    <title>Document</title>
+    <script src="//www.amcharts.com/lib/4/core.js"></script>
+    <script src="//www.amcharts.com/lib/4/charts.js"></script>
+    <script src="https://www.amcharts.com/lib/4/themes/dataviz.js"></script>
+    <script src="//www.amcharts.com/lib/4/themes/animated.js"></script>
 </head>
 
 <body>
-  <div id="chartdiv"></div>
-  <div id="chartdiv2"></div>
-  <script>
+    <div id="chartdiv"></div>
+    <div id="chartdiv2"></div>
+    <script>
     /*
      *
      * ---------------------------------------
@@ -47,20 +48,20 @@
 
     // Add data
     chart.data = [{
-      "stage": "I",
-      "duration": 7800
+        "stage": "I",
+        "duration": 7800
     }, {
-      "stage": "II",
-      "duration": 6000
+        "stage": "II",
+        "duration": 6000
     }, {
-      "stage": "III",
-      "duration": 180000
+        "stage": "III",
+        "duration": 180000
     }, {
-      "stage": "IV",
-      "duration": 12500
+        "stage": "IV",
+        "duration": 12500
     }, {
-      "stage": "V",
-      "duration": 5000
+        "stage": "V",
+        "duration": 5000
     }];
 
     // Create axes
@@ -80,7 +81,7 @@
     series.columns.template.tooltipText = "{categoryX}: {valueY.formatDuration()}";
     // as by default columns of the same series are of the same color, we add adapter which takes colors from chart.colors color set
     series.columns.template.adapter.add("fill", (fill, target) => {
-      return chart.colors.getIndex(target.dataItem.index * 2);
+        return chart.colors.getIndex(target.dataItem.index * 2);
     });
     // Force global duration format
     chart.durationFormatter.durationFormat = "hh ':' mm ':' ss  ";
@@ -93,53 +94,53 @@
     chart.hiddenState.properties.opacity = 0; // this creates initial fade-in
 
     chart.data = [{
-        country: "USA",
-        visits: 23725
-      },
-      {
-        country: "China",
-        visits: 1882
-      },
-      {
-        country: "Japan",
-        visits: 1809
-      },
-      {
-        country: "Germany",
-        visits: 1322
-      },
-      {
-        country: "UK",
-        visits: 1122
-      },
-      {
-        country: "France",
-        visits: 1114
-      },
-      {
-        country: "India",
-        visits: 984
-      },
-      {
-        country: "Spain",
-        visits: 711
-      },
-      {
-        country: "Netherlands",
-        visits: 665
-      },
-      {
-        country: "Russia",
-        visits: 580
-      },
-      {
-        country: "South Korea",
-        visits: 443
-      },
-      {
-        country: "Canada",
-        visits: 441
-      }
+            country: "USA",
+            visits: 23725
+        },
+        {
+            country: "China",
+            visits: 1882
+        },
+        {
+            country: "Japan",
+            visits: 1809
+        },
+        {
+            country: "Germany",
+            visits: 1322
+        },
+        {
+            country: "UK",
+            visits: 1122
+        },
+        {
+            country: "France",
+            visits: 1114
+        },
+        {
+            country: "India",
+            visits: 984
+        },
+        {
+            country: "Spain",
+            visits: 711
+        },
+        {
+            country: "Netherlands",
+            visits: 665
+        },
+        {
+            country: "Russia",
+            visits: 580
+        },
+        {
+            country: "South Korea",
+            visits: 443
+        },
+        {
+            country: "Canada",
+            visits: 441
+        }
     ];
 
     var categoryAxis = chart.xAxes.push(new am4charts.CategoryAxis());
@@ -190,9 +191,9 @@
 
     // as by default columns of the same series are of the same color, we add adapter which takes colors from chart.colors color set
     series.columns.template.adapter.add("fill", (fill, target) => {
-      return chart.colors.getIndex(target.dataItem.index * 2);
+        return chart.colors.getIndex(target.dataItem.index * 2);
     });
-  </script>
+    </script>
 
 </body>
 

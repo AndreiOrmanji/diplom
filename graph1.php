@@ -203,12 +203,12 @@ function getLogs()
                         $logWeek = R::find('logs', ' user_id = ? AND date >= ? AND date <= ?',  [$_SESSION['id'], $firstDay, $lastDay]);
                         $TasksID = getTasksID(); //уникальные записи о задачах 1, 2, 3
                         $wDays = getWeekDays($firstDay, $lastDay);
-                        //$intervals = array();
-                        //echo $firstDay."  ".$lastDay."", "\n";
-                        //echo date("N",strtotime($lastDay));
-                        //$date = date('d-m-Y', strtotime("+1 day", strtotime("10-12-2011")));
+                        $intervals = array();
+                        echo $firstDay . "  " . $lastDay . "", "\n";
+                        echo date("N", strtotime($lastDay));
+                        $date = date('d-m-Y', strtotime("+1 day", strtotime("10-12-2011")));
                         $dayToCompare = $firstDay;
-                        //echo $dayToCompare . "</br>";
+                        echo $dayToCompare . "</br>";
                         for ($i = 0; $i < 7; $i++) {
                             $temp = 0;
                             $logWeek = R::find('logs', ' user_id = ? AND date >= ? AND date <= ?',  [$_SESSION['id'], $firstDay, $lastDay]);
@@ -223,11 +223,11 @@ function getLogs()
                                 }
                             }
                             if ($i < 6) $dayToCompare    = date('Y-m-d', strtotime("+1 day", strtotime($dayToCompare)));
-                            //echo $dayToCompare."</br>";
-                            //array_push($intervals, $temp);                  
+                            echo $dayToCompare . "</br>";
+                            array_push($intervals, $temp);
                             $intervals[$i] = $temp;
                         }
-                        //print_r($intervals);
+                        print_r($intervals);
                         //for ($k=0;$k<7;$k++){
                         //echo strtotime("+1 day"), "\n";
                         //}
@@ -321,7 +321,8 @@ function getLogs()
             labels: [<?php echo $labelsX; ?>],
             datasets: [{
                 label: "Time (seconds)",
-                backgroundColor: ["#235789", "#a1d302", "#5e95cd", "#8e5ea2", "#3cba9f", "#e8c3b9",
+                backgroundColor: ["#F7464A", "#46BFBD", "#FDB45C", "#949FB1", "#4D5360",
+                    "#235789", "#a1d302", "#5e95cd", "#8e5ea2", "#3cba9f", "#e8c3b9",
                     "#c45850", "#e3b505",
                     "#95190c",
                     "#610345", "#107e7d", "#044b7f", "#93b5c6", "#ddedaa", "#f0cf65", "#d7816a",
@@ -350,7 +351,8 @@ function getLogs()
             labels: [<?php echo $labelsXProjects; ?>],
             datasets: [{
                 label: "Time (seconds)",
-                backgroundColor: ["#3e95cd", "#8e5ea2", "#3cba9f", "#e8c3b9", "#c45850", "#e3b505",
+                backgroundColor: ["#F7464A", "#46BFBD", "#FDB45C", "#949FB1", "#4D5360", "#3e95cd",
+                    "#8e5ea2", "#3cba9f", "#e8c3b9", "#c45850", "#e3b505",
                     "#95190c",
                     "#610345", "#107e7d", "#044b7f", "#93b5c6", "#ddedaa", "#f0cf65", "#d7816a",
                     "#bd4f6c",
