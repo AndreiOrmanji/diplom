@@ -22,7 +22,7 @@ function getProjects()
 function getLogs()
 {
     //return $array = print_r($array);
-    return R::getAll('SELECT a.project_id, b.pr_name, a.task_id, c.t_name, a.new_status, a.time, a.date FROM logs a, projects b, tasks c WHERE a.project_id = b.id AND a.task_id = c.id  AND a.user_id = ?', [$_SESSION['id']]);
+    return R::getAll('SELECT a.id, a.project_id, b.pr_name, a.task_id, c.t_name, a.new_status, a.time, a.date FROM logs a, projects b, tasks c WHERE a.project_id = b.id AND a.task_id = c.id  AND a.user_id = ?', [$_SESSION['id']]);
 }
 
 function toJSON($label1, $label2, $arr1, $arr2)
@@ -36,6 +36,140 @@ function toJSON($label1, $label2, $arr1, $arr2)
         }
     }
     return $str;
+}
+
+
+try {
+    $userTasks = getTasksID(); //уникальные записи о задачах 1, 2, 3
+    $labelsYallTasks = array();
+    for ($i = 0; $i < sizeof($userTasks); $i++) {
+        $temp = 0;
+        $logs = R::find('logs', ' user_id = ? ',  [$_SESSION['id']]);
+        for ($j = 0; $j < sizeof($logs); $j++) {
+            if ($logs[$j]['task_id'] === $userTasks[$i]['task_id'] && ($logs[$j]['new_status'] === 'Running')) {
+                if ($logs[$j + 1]['task_id'] === $userTasks[$i]['task_id']) {
+                    $temp += ($logs[$j + 1]['timestamp'] - $logs[$j]['timestamp']);
+                }
+            }
+        }
+        array_push($labelsYallTasks, $temp);
+    }
+    $labelsX = array();
+    for ($i = 0; $i < sizeof($userTasks); $i++) {
+        $str = '"' . $userTasks[$i]['pr_name'] . ' / ' . $userTasks[$i]['t_name'] . '"';
+        array_push($labelsX, $str);
+    }
+} catch (Exception $e) {
+    echo "$e";
+}
+
+try {
+    //Расчеты по проектам
+    $projects = getProjects();
+    $labelsYProjects = array();
+    for ($i = 0; $i < sizeof($projects); $i++) {
+        $temp = 0;
+        $logs = R::find('logs', ' user_id = ? ',  [$_SESSION['id']]);
+        for ($j = 0; $j < sizeof($logs); $j++) {
+            if (($logs[$j]['project_id'] === $projects[$i]['project_id']) && ($logs[$j]['new_status'] === 'Running')) {
+                if (($logs[$j + 1]['project_id'] === $projects[$i]['project_id'])) {
+                    $temp += ($logs[$j + 1]['timestamp'] - $logs[$j]['timestamp']);
+                }
+            }
+        }
+        array_push($labelsYProjects, $temp);
+    }
+    //$temp = 0;
+    $labelsXProjects = array();
+    foreach ($projects as $t) {
+        //$labelsXProjects .= '"' . $t['pr_name'] . '", ';
+        $str = '"' . $t['pr_name'] . '"';
+        array_push($labelsXProjects, $str);
+    }
+} catch (Exception $e) {
+    echo "$e";
+}
+
+try {
+    //II. расчеты для 2 графика по неделям
+    $day = date('w');
+    $currentWeek = array();
+    $firstDay =  date("Y-m-d", strtotime('Monday this week'));
+    $lastDay =  date("Y-m-d", strtotime('Sunday this week'));
+    $logWeek = R::find('logs', ' user_id = ? AND date >= ? AND date <= ?',  [$_SESSION['id'], $firstDay, $lastDay]);
+    $TasksID = getTasksID(); //уникальные записи о задачах 1, 2, 3
+    $wDays = getWeekDays($firstDay, $lastDay);
+    $labelsYweek = array();
+    //echo $firstDay . "  " . $lastDay . "", "\n";
+    //echo date("N", strtotime($lastDay));
+    $date = date('d-m-Y', strtotime("+1 day", strtotime("10-12-2011")));
+    $dayToCompare = $firstDay;
+    //echo $dayToCompare . "</br>";
+    for ($i = 0; $i < 7; $i++) {
+        $temp = 0;
+        $logWeek = R::find('logs', ' user_id = ? AND date >= ? AND date <= ?',  [$_SESSION['id'], $firstDay, $lastDay]);
+        for ($j = 0; $j < sizeof($logs); $j++) {
+            if (($logs[$j]['date'] === $dayToCompare) && ($logs[$j]['new_status'] === 'Running')) {
+                if (($logs[$j + 1]['date'] === $dayToCompare)) {
+                    // print_r($logs[$j]->export());
+                    // print_r($logs[$j+1]->export());
+                    $temp += ($logs[$j + 1]['timestamp'] - $logs[$j]['timestamp']);
+                    //echo $dayToCompare.': '.$logs[$j]['t_name'].': '.$temp.'</br>';                  
+                }
+            }
+        }
+        if ($i < 6) $dayToCompare    = date('Y-m-d', strtotime("+1 day", strtotime($dayToCompare)));
+        array_push($labelsYweek, $temp);
+    }
+    //print_r($intervals);
+    $labelsXweek = ['"Понедельник"', '"Вторник"', '"Среда"', '"Четверг"', '"Пятница"', '"Суббота"', '"Воскресение"'];
+} catch (Exception $e) {
+    echo "$e";
+}
+
+try {
+    $labelsYDays = array();
+    if (empty($logs)) echo "No activity by " . $_SESSION['email'] . ".";
+    else {
+        $activity_date = R::getCol('SELECT DISTINCT date FROM logs where user_id=?', [$_SESSION['id']]);
+        foreach ($activity_date as $day) {
+            $temp = 0;
+            $sql = "select * from logs where date = '" . $day . "' and user_id = " . $_SESSION['id'] . "";
+            $rows = R::getAll($sql);
+            //echo '<pre>'.print_r($rows).'</pre>';
+            //$logs = R::convertToBeans( 'logs', $rows );
+            //$logs = R::get( 'logs', ' user_id = ? and date = ?',  [$_SESSION['id'],'2019-04-14']);
+            //echo '<script>console.log('.print_r($logs->export()).');</script>';
+            //echo sizeof($logs);
+            for ($j = 1; $j < sizeof($rows); $j++) {
+                if (($rows[$j]['new_status'] === 'Running')) {
+                    //echo "</br>j=" . $j . " status:" . $rows[$j]['new_status'];
+                    for ($k = $j - 1; $k >= 0; $k--) {
+                        //echo "</br>k=" . $k;
+                        if ($rows[$k]['new_status'] !== 'Paused') {
+                            //echo "skipped";
+                            continue;
+                        } else {
+                            //echo " status:".$rows[$k]['new_status']." ".($rows[$j]['timestamp']-$rows[$k]['timestamp'])."</br>";
+                            $temp += ($rows[$j]['timestamp'] - $rows[$k]['timestamp']);
+                            break;
+                        }
+                    }
+                }
+            }
+            array_push($labelsYDays, $temp);
+            // print_r($intervals);
+        }
+
+        $labelsXDays = array();
+        foreach ($activity_date as $date) {
+            $temp = '"' . $date . '"';
+            array_push($labelsXDays, $temp);
+            //echo $date;
+        }
+    }
+} catch (Exception $e) {
+    echo "$e";
 }
 
 ?>
@@ -83,7 +217,7 @@ function toJSON($label1, $label2, $arr1, $arr2)
             $timeNow = time();
             echo '<div class="container">Tracking starts at ' . date("H:i:s", time()) . '(' . time() . ')</div>
                     <div>Current Time: <span id="current_time"></span></div>';
-            $logs = getTasksID(); //R::find('logs', ' user_id = ? ',  [$_SESSION['id']]);
+            $logs = getLogs(); //R::find('logs', ' user_id = ? ',  [$_SESSION['id']]);
             //echo print_r($logs);
             if (empty($logs)) echo "No activity by " . $_SESSION['email'] . ".";
             else {
@@ -91,7 +225,7 @@ function toJSON($label1, $label2, $arr1, $arr2)
                 <div class="container">
                 <details>
                 <summary>Tables for ' . $_SESSION['email'] . '</summary>';
-                $activity_date = R::getCol('SELECT DISTINCT date FROM logs;');
+                $activity_date = R::getCol('SELECT DISTINCT date FROM logs');
                 // foreach ($activity_date as $day){
                 //     $logs = R::find( 'logs', ' user_id = ? and date = ?',  [$_SESSION['id'],$date]);
                 //     echo '<script>console.log('.print_r($logs->export()).');</script>';
@@ -139,189 +273,31 @@ function toJSON($label1, $label2, $arr1, $arr2)
             echo "$e";
         }
         ?>
-    <?php else : ?>
-    <?= "You are not autorized. Go to <a href=\"./login\">Login Page.</a> "; ?>
-    <?php endif; ?>
+
     <div class="container-fluid">
         <div class='row'>
             <div class='col-md-6'>
                 <div id="pie-chart-all-tasks">
-                    <?php
-                    try {
-                        $userTasks = getTasksID(); //уникальные записи о задачах 1, 2, 3
-                        print_r($userTasks);
-                        $intervals = array();
-                        for ($i = 0; $i < sizeof($userTasks); $i++) {
-                            $temp = 0;
-                            $logs = R::find('logs', ' user_id = ? ',  [$_SESSION['id']]);
-                            for ($j = 0; $j < sizeof($logs); $j++) {
-                                if ($logs[$j]['task_id'] === $userTasks[$i]['task_id'] && ($logs[$j]['new_status'] === 'Running')) {
-                                    if ($logs[$j + 1]['task_id'] === $userTasks[$i]['task_id']) {
-                                        $temp += ($logs[$j + 1]['timestamp'] - $logs[$j]['timestamp']);
-                                    }
-                                }
-                            }
-                            array_push($intervals, $temp);
-                        }
-                        $labelsX = array();
-                        for ($i = 0; $i < sizeof($userTasks); $i++) {
-                            $str = '"' . $userTasks[$i]['pr_name'] . ' / ' . $userTasks[$i]['t_name'] . '"';
-                            array_push($labelsX, $str);
-                        }
-                        $labelsYallTasks = $intervals;
-                    } catch (Exception $e) {
-                        echo "$e";
-                    }
-                    ?>
                 </div>
             </div>
             <div class='col-md-6'>
                 <div id="pie-chart-all-projects">
-                    <?php
-                    try {
-                        //Расчеты по проектам
-                        $projects = getProjects();
-                        //print_r($projects);
-                        $intervals = array();
-                        for ($i = 0; $i < sizeof($projects); $i++) {
-                            $temp = 0;
-                            $logs = R::find('logs', ' user_id = ? ',  [$_SESSION['id']]);
-                            for ($j = 0; $j < sizeof($logs); $j++) {
-                                if (($logs[$j]['project_id'] === $projects[$i]['project_id']) && ($logs[$j]['new_status'] === 'Running')) {
-                                    if (($logs[$j + 1]['project_id'] === $projects[$i]['project_id'])) {
-                                        $temp += ($logs[$j + 1]['timestamp'] - $logs[$j]['timestamp']);
-                                    }
-                                }
-                            }
-                            array_push($intervals, $temp);
-                        }
-                        //$temp = 0;
-                        $labelsXProjects = array();
-                        foreach ($projects as $t) {
-                            //$labelsXProjects .= '"' . $t['pr_name'] . '", ';
-                            $str = '"' . $t['pr_name'] . '"';
-                            array_push($labelsXProjects, $str);
-                        }
-
-                        $labelsYProjects = $intervals;
-                        // foreach ($intervals as $interval) {
-                        //     $temp += $interval;
-                        //     $labelsYProjects .= '' . $interval . ', ';
-                        // }
-                    } catch (Exception $e) {
-                        echo "$e";
-                    }
-                    ?>
                 </div>
             </div>
-
             <div class='col-md-6'>
                 <div id="bar-chart-by-week">
-                    <?php
-                    try {
-                        //II. расчеты для 2 графика по неделям
-                        $day = date('w');
-                        $currentWeek = array();
-                        $firstDay =  date("Y-m-d", strtotime('Monday this week'));
-                        $lastDay =  date("Y-m-d", strtotime('Sunday this week'));
-                        $logWeek = R::find('logs', ' user_id = ? AND date >= ? AND date <= ?',  [$_SESSION['id'], $firstDay, $lastDay]);
-                        $TasksID = getTasksID(); //уникальные записи о задачах 1, 2, 3
-                        $wDays = getWeekDays($firstDay, $lastDay);
-                        $intervals = array();
-                        //echo $firstDay . "  " . $lastDay . "", "\n";
-                        //echo date("N", strtotime($lastDay));
-                        $date = date('d-m-Y', strtotime("+1 day", strtotime("10-12-2011")));
-                        $dayToCompare = $firstDay;
-                        //echo $dayToCompare . "</br>";
-                        for ($i = 0; $i < 7; $i++) {
-                            $temp = 0;
-                            $logWeek = R::find('logs', ' user_id = ? AND date >= ? AND date <= ?',  [$_SESSION['id'], $firstDay, $lastDay]);
-                            for ($j = 0; $j < sizeof($logs); $j++) {
-                                if (($logs[$j]['date'] === $dayToCompare) && ($logs[$j]['new_status'] === 'Running')) {
-                                    if (($logs[$j + 1]['date'] === $dayToCompare)) {
-                                        // print_r($logs[$j]->export());
-                                        // print_r($logs[$j+1]->export());
-                                        $temp += ($logs[$j + 1]['timestamp'] - $logs[$j]['timestamp']);
-                                        //echo $dayToCompare.': '.$logs[$j]['t_name'].': '.$temp.'</br>';                  
-                                    }
-                                }
-                            }
-                            if ($i < 6) $dayToCompare    = date('Y-m-d', strtotime("+1 day", strtotime($dayToCompare)));
-                            //echo $dayToCompare . "</br>";
-                            array_push($intervals, $temp);
-                            $intervals[$i] = $temp;
-                        }
-                        //print_r($intervals);
-                        $labelsXweek = ['"Понедельник"', '"Вторник"', '"Среда"', '"Четверг"', '"Пятница"', '"Суббота"', '"Воскресение"'];
-                        // foreach ($labelsXweek as $label) {
-                        //     $label = '"' . $label . '"';
-                        // }
-
-                        $labelsYweek = $intervals;
-                        //for ($k=0;$k<7;$k++){
-                        //echo strtotime("+1 day"), "\n";
-                        //}
-                        //echo var_dump($intervals);
-                        // $temp = "";
-                    } catch (Exception $e) {
-                        echo "$e";
-                    }
-                    ?>
                 </div>
             </div>
 
             <div class='col-md-6'>
                 <div id="bar-chart-by-pauses">
-                    <?php
-                    try {
-                        $intervals = array();
-                        foreach ($activity_date as $day) {
-                            $temp = 0;
-                            $sql = "select * from logs where date = '" . $day . "'";
-                            $rows = R::getAll($sql);
-                            //echo '<pre>'.print_r($rows).'</pre>';
-                            //$logs = R::convertToBeans( 'logs', $rows );
-                            //$logs = R::get( 'logs', ' user_id = ? and date = ?',  [$_SESSION['id'],'2019-04-14']);
-                            //echo '<script>console.log('.print_r($logs->export()).');</script>';
-                            //echo sizeof($logs);
-                            for ($j = 1; $j < sizeof($rows); $j++) {
-                                if (($rows[$j]['new_status'] === 'Running')) {
-                                    //echo "</br>j=" . $j . " status:" . $rows[$j]['new_status'];
-                                    for ($k = $j - 1; $k >= 0; $k--) {
-                                        //echo "</br>k=" . $k;
-                                        if ($rows[$k]['new_status'] !== 'Paused') {
-                                            //echo "skipped";
-                                            continue;
-                                        } else {
-                                            //echo " status:".$rows[$k]['new_status']." ".($rows[$j]['timestamp']-$rows[$k]['timestamp'])."</br>";
-                                            $temp += ($rows[$j]['timestamp'] - $rows[$k]['timestamp']);
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                            array_push($intervals, $temp);
-                            // print_r($intervals);
-                        }
-                        $labelsXDays = array();
-                        foreach ($activity_date as $date) {
-                            $temp = '"' . $date . '"';
-                            array_push($labelsXDays, $temp);
-                            //echo $date;
-                        }
-                        $labelsYDays = $intervals;
-                        // foreach ($intervals as $interval) {
-                        //     //$temp += $interval; //изменил только что (1 Спорный момент)
-                        //     $labelsYDays .= '' . $interval . ', ';
-                        // }
-                    } catch (Exception $e) {
-                        echo "$e";
-                    }
-                    ?>
                 </div>
             </div>
         </div>
     </div>
+    <?php else : ?>
+    <?= "You are not autorized. Go to <a href=\"./login\">Login Page.</a> "; ?>
+    <?php endif; ?>
     <!-- Resources -->
     <script src="https://www.amcharts.com/lib/4/core.js"></script>
     <script src="https://www.amcharts.com/lib/4/charts.js"></script>

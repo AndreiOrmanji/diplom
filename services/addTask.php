@@ -39,7 +39,7 @@ try{
         $task->t_resumed = NULL;
         $task_id = R::store( $task );
         $task = R::load( 'tasks', $task_id);
-        $logRecord = R::dispense ('logs');
+        $logRecord = R::dispense ('logs_tasks_created_finished');
         $logRecord->user_id = $task['user_id'];
         $logRecord->task_id = $task['id'];
         $logRecord->project_id = $task['project_id'];

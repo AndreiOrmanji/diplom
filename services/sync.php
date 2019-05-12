@@ -4,11 +4,16 @@ require_once '../db.php';
 $data = $_POST['data'];
 //print_r($data);
 try{
-        $logRecord = R::dispense ( 'logs' );
-        $logRecord->import($data);
-        $logRecord->time = date("H:i:s",$logRecord->timestamp);
-        $logRecord->date = date("Y-m-d",$logRecord->timestamp);
-        R::store( $logRecord );
+        if ($data["newStatus"]==="Finished"){
+            $logRecord = R::dispense('logs_tasks_created_finished');
+        }
+        else{
+            $logRecord = R::dispense('logs');
+        }
+            $logRecord->import($data);
+            $logRecord->time = date("H:i:s", $logRecord->timestamp);
+            $logRecord->date = date("Y-m-d", $logRecord->timestamp);
+            R::store($logRecord);
     // $tmp = $logRecord->export();
     // echo $tmp;
 }

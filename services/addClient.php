@@ -27,7 +27,7 @@ try {
         $client->email = $_POST['email'];
         $client->phone = $_POST['phone'];
         $client_id = R::store($client);
-        $client = R::load('clients', $client_id);
+        //$client = R::load('clients', $client_id);
         // $logRecord = R::dispense ('project_logs');
         // $logRecord->userId = $client['userId'];
         // $logRecord->taskId = $client['id'];

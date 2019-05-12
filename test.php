@@ -6,193 +6,140 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <style>
-    body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-    }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+        }
 
-    #chartdiv,
+        /* #chartdiv,
     #chartdiv2 {
         width: 50vw;
         height: 500px;
 
-    }
+    } */
+        #chartdiv {
+            width: 100%;
+            height: 500px;
+        }
     </style>
     <title>Document</title>
-    <script src="//www.amcharts.com/lib/4/core.js"></script>
-    <script src="//www.amcharts.com/lib/4/charts.js"></script>
+    <script src="https://www.amcharts.com/lib/4/core.js"></script>
+    <script src="https://www.amcharts.com/lib/4/charts.js"></script>
     <script src="https://www.amcharts.com/lib/4/themes/dataviz.js"></script>
-    <script src="//www.amcharts.com/lib/4/themes/animated.js"></script>
+    <script src="https://www.amcharts.com/lib/4/themes/animated.js"></script>
 </head>
 
 <body>
     <div id="chartdiv"></div>
     <div id="chartdiv2"></div>
     <script>
-    /*
-     *
-     * ---------------------------------------
-     * This demo was created using amCharts 4.
-     *
-     * For more information visit:
-     * https://www.amcharts.com/
-     *
-     * Documentation is available at:
-     * https://www.amcharts.com/docs/v4/
-     * ---------------------------------------
-     */
+        /**
+         * ---------------------------------------
+         * This demo was created using amCharts 4.
+         * 
+         * For more information visit:
+         * https://www.amcharts.com/
+         * 
+         * Documentation is available at:
+         * https://www.amcharts.com/docs/v4/
+         * ---------------------------------------
+         */
 
-    am4core.useTheme(am4themes_animated);
+        // Themes begin
+        am4core.useTheme(am4themes_animated);
+        // Themes end
 
-    // Create chart instance
-    var chart = am4core.create("chartdiv", am4charts.XYChart);
+        var chart = am4core.create("chartdiv", am4charts.XYChart);
+        chart.hiddenState.properties.opacity = 0; // this creates initial fade-in
 
-    // Add data
-    chart.data = [{
-        "stage": "I",
-        "duration": 7800
-    }, {
-        "stage": "II",
-        "duration": 6000
-    }, {
-        "stage": "III",
-        "duration": 180000
-    }, {
-        "stage": "IV",
-        "duration": 12500
-    }, {
-        "stage": "V",
-        "duration": 5000
-    }];
+        chart.paddingRight = 30;
+        chart.dateFormatter.inputDateFormat = "yyyy-MM-dd HH:mm";
 
-    // Create axes
-    var xAxis = chart.xAxes.push(new am4charts.CategoryAxis());
-    xAxis.dataFields.category = "stage";
-    xAxis.renderer.grid.template.location = 0;
-    xAxis.renderer.minGridDistance = 30;
+        var colorSet = new am4core.ColorSet();
+        // colorSet.saturation = 0.4;
 
-    var yAxis = chart.yAxes.push(new am4charts.DurationAxis());
-    yAxis.baseUnit = "second";
-    yAxis.title.text = "Duration";
+        chart.data = [
+    {
+        "name": "Others tasks/1st task",
+        "fromDate": "2019-04-29 00:59:28",
+        "toDate": "2019-04-29 00:59:38"
+    },
+    {
+        "name": "Others tasks/2ndTask",
+        "fromDate": "2019-04-29 01:00:10",
+        "toDate": "2019-04-29 01:00:21"
+    },
+    {
+        "name": "Others tasks/1st task",
+        "fromDate": "2019-04-29 03:06:50",
+        "toDate": "2019-04-29 03:07:43"
+    },
+    {
+        "name": "Others tasks/2ndTask",
+        "fromDate": "2019-04-29 14:11:52",
+        "toDate": "2019-04-29 14:13:02"
+    },
+    {
+        "name": "Test Project/1stCreatedTask",
+        "fromDate": "2019-04-29 01:01:34",
+        "toDate": "2019-04-29 03:06:50"
+    },
+    {
+        "name": "Test Project/2ndCreatedTask",
+        "fromDate": "2019-04-29 17:36:08",
+        "toDate": "2019-04-29 17:38:20"
+    }
+        ];
 
-    // Create series
-    var series = chart.series.push(new am4charts.ColumnSeries());
-    series.dataFields.valueY = "duration";
-    series.dataFields.categoryX = "stage";
-    series.columns.template.tooltipText = "{categoryX}: {valueY.formatDuration()}";
-    // as by default columns of the same series are of the same color, we add adapter which takes colors from chart.colors color set
-    series.columns.template.adapter.add("fill", (fill, target) => {
-        return chart.colors.getIndex(target.dataItem.index * 2);
-    });
-    // Force global duration format
-    chart.durationFormatter.durationFormat = "hh ':' mm ':' ss  ";
+        var categoryAxis = chart.yAxes.push(new am4charts.CategoryAxis());
+        categoryAxis.dataFields.category = "name";
+        categoryAxis.renderer.grid.template.location = 0;
+        categoryAxis.renderer.inversed = true;
 
+        var dateAxis = chart.xAxes.push(new am4charts.DateAxis());
+        dateAxis.dateFormatter.dateFormat = "yyyy-MM-dd HH:mm";
+        dateAxis.renderer.minGridDistance = 60;
+        dateAxis.baseInterval = {
+            count: 5,
+            timeUnit: "minute"
+        };
+        let dateFrom = chart.data[0].fromDate.split(" ");
+            var parts =dateFrom[0].split('-');
+            var dateParsed = new Date(parts[0], parts[1] - 1, parts[2],0,0,0); 
+            //console.log(dateParsed.toDateString());
+        dateAxis.max = new Date(parts[0], parts[1] - 1, parts[2],23,59,59).getTime();
+        dateAxis.min = new Date(parts[0], parts[1] - 1, parts[2],0,0,0).getTime();
+        dateAxis.strictMinMax = false;
+        dateAxis.renderer.tooltipLocation = 0;
 
+        var series1 = chart.series.push(new am4charts.ColumnSeries());
+        series1.columns.template.width = am4core.percent(80);
+        series1.columns.template.tooltipText = "[font-style: italic]{name}:\n[bold]{openDateX} - {dateX}";
 
+        series1.dataFields.openDateX = "fromDate";
+        series1.dataFields.dateX = "toDate";
+        series1.dataFields.categoryY = "name";
+        series1.columns.template.propertyFields.fill = "color"; // get color from data
+        series1.columns.template.propertyFields.stroke = "color";
+        series1.columns.template.strokeOpacity = 1;
+        // series1.columns.template.adapter.add("fill", (fill, target) => {
+        //             return chart.colors.getIndex(target.dataItem.index * 2);
+        //         });
 
+        chart.scrollbarX = new am4core.Scrollbar();
 
-    var chart = am4core.create("chartdiv2", am4charts.XYChart);
-    chart.hiddenState.properties.opacity = 0; // this creates initial fade-in
-
-    chart.data = [{
-            country: "USA",
-            visits: 23725
-        },
-        {
-            country: "China",
-            visits: 1882
-        },
-        {
-            country: "Japan",
-            visits: 1809
-        },
-        {
-            country: "Germany",
-            visits: 1322
-        },
-        {
-            country: "UK",
-            visits: 1122
-        },
-        {
-            country: "France",
-            visits: 1114
-        },
-        {
-            country: "India",
-            visits: 984
-        },
-        {
-            country: "Spain",
-            visits: 711
-        },
-        {
-            country: "Netherlands",
-            visits: 665
-        },
-        {
-            country: "Russia",
-            visits: 580
-        },
-        {
-            country: "South Korea",
-            visits: 443
-        },
-        {
-            country: "Canada",
-            visits: 441
+        var nameArray = [];
+        chart.data.forEach(element => {
+            nameArray.push(element.name);
+            
+        });
+        var uniqueNames = [...new Set(nameArray)];
+        for (let j = 0; j < uniqueNames.length; j++) {
+            for (let i = 0; i < chart.data.length; i++) {
+                if (chart.data[i].name === uniqueNames[j])
+                    chart.data[i].color = chart.colors.getIndex(j * 2);
+            }
         }
-    ];
-
-    var categoryAxis = chart.xAxes.push(new am4charts.CategoryAxis());
-    categoryAxis.renderer.grid.template.location = 0;
-    categoryAxis.dataFields.category = "country";
-
-    var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
-    valueAxis.min = 0;
-    valueAxis.max = 24000;
-    valueAxis.strictMinMax = true;
-    valueAxis.renderer.minGridDistance = 30;
-    // axis break
-    var axisBreak = valueAxis.axisBreaks.create();
-    axisBreak.startValue = 2100;
-    axisBreak.endValue = 22900;
-    axisBreak.breakSize = 0.005;
-
-    // make break expand on hover
-    var hoverState = axisBreak.states.create("hover");
-    hoverState.properties.breakSize = 1;
-    hoverState.properties.opacity = 0.1;
-    hoverState.transitionDuration = 1500;
-
-    axisBreak.defaultState.transitionDuration = 1000;
-    /*
-    // this is exactly the same, but with events
-    axisBreak.events.on("over", () => {
-      axisBreak.animate(
-        [{ property: "breakSize", to: 1 }, { property: "opacity", to: 0.1 }],
-        1500,
-        am4core.ease.sinOut
-      );
-    });
-    axisBreak.events.on("out", () => {
-      axisBreak.animate(
-        [{ property: "breakSize", to: 0.005 }, { property: "opacity", to: 1 }],
-        1000,
-        am4core.ease.quadOut
-      );
-    });*/
-
-    var series = chart.series.push(new am4charts.ColumnSeries());
-    series.dataFields.categoryX = "country";
-    series.dataFields.valueY = "visits";
-    series.columns.template.tooltipText = "{valueY.value}";
-    series.columns.template.tooltipY = 0;
-    series.columns.template.strokeOpacity = 0;
-
-    // as by default columns of the same series are of the same color, we add adapter which takes colors from chart.colors color set
-    series.columns.template.adapter.add("fill", (fill, target) => {
-        return chart.colors.getIndex(target.dataItem.index * 2);
-    });
+        //console.log(chart.data);
     </script>
 
 </body>
