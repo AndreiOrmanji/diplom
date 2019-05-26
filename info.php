@@ -54,50 +54,42 @@ try {
     $name = array();
     $fromDate = array();
     $toDate = array();
-
+    $all_logs = array();
     $daily_log = getLogs();
 
     $date = R::getCol('SELECT DISTINCT date FROM logs where user_id=?', [$_SESSION['id']]);
     //print_r($date);
+    //ПЕРЕБИРАЕМ ДАТЫ ИЗ ЛОГОВ
     for ($j = 0; $j < sizeof($date); $j++) {
-        $date[0]="2019-05-04";
-        //echo '<pre>' . $date[$j] . '</pre>';
-        //     if ($daily_log[0]['new_status'] === "Paused") {
-        //         echo 
-        //     array_push($name,'"' . $daily_log[0]['pr_name'] . '"/' . $daily_log[0]['t_name'] . '"');
-        //     array_push($fromDate, '"'.$daily_log[0]['date'].' 00:00:00"');
-        //     array_push($toDate, '"'. $daily_log[0]['date'] . ' ' . $daily_log[0]['time'] . '"');
-        //     array_push($result, ['name' => $tmp, "fromDate" => '"' .$daily_log[0]['date'].' 00:00:00"'. '"', "toDate" => '"' . $daily_log[0]['date'] . ' ' . $daily_log[0]['time'] . '"']);
-        // }
-        // if ($daily_log[sizeof($daily_log)-1]['new_status'] === "Running") {
-        //     array_push($name,'"' . $daily_log[sizeof($daily_log)-1]['pr_name'] . '"/' . $daily_log[sizeof($daily_log)-1]['t_name'] . '"');
-        //     array_push($fromDate, '"'.$daily_log[sizeof($daily_log)-1]['date']. ' ' . $daily_log[sizeof($daily_log)-1]['time'] . '"');
-        //     array_push($toDate, '"'. $daily_log[sizeof($daily_log)-1]['date'] . ' 00:00:00"');
-        // }
         for ($i = 0; $i < sizeof($daily_log) - 1; $i++) {
+            // PEREBIRAEM LOGI KAJDOY OTDELINOY DATI
             if ($daily_log[$i]['date'] === $date[$j]) {
+                //ESLI PERVAYA ZAPISI NACHINAETSIA S PAUSI, TO SOZDAEM ZAPISI NACHATUYU S DATI V 00:00 DO PERVOY ZAPISI
                 if (($i === 0) && ($daily_log[$i]['new_status'] === "Paused")) {
                     $tmp = $daily_log[$i]['pr_name'] . '/' . $daily_log[$i]['t_name'];
                     array_push($result, ['name' => $tmp, "fromDate" => $daily_log[$i]['date'] . " 00:00:00", "toDate" =>  $daily_log[$i]['date'] . ' ' . $daily_log[$i]['time']]);
                 }
+                //ESLI PERVAYA ZAPISI ZAPUSK, TO 
                 if (($daily_log[$i]['new_status'] === "Running")) {
                     $tmp = $daily_log[$i]['pr_name'] . '/' . $daily_log[$i]['t_name'];
                     array_push($result, ['name' => $tmp, "fromDate" => $daily_log[$i]['date'] . ' ' . $daily_log[$i]['time'], "toDate" =>  $daily_log[$i + 1]['date'] . ' ' . $daily_log[$i + 1]['time']]);
-                    //$i++;
-                    // array_push($name,'"' . $daily_log[$i]['pr_name'] . '"/' . $daily_log[$i]['t_name'] . '"');
-                    // array_push($fromDate, '"'.$daily_log[$i]['date']. ' ' . $daily_log[$i]['time'] . '"');
-                    // array_push($toDate, '"'. $daily_log[$i]['date'] . ' ' . $daily_log[$i+1]['time'] . '"');
+                    $i++;
                 }
             }
         }
+        //ESLI POSLEDNIAYA ZAPISI - ZAPUSK, TO SOZDAEM ZAPISI ZAKANCHIVAYUSHUYUSIA V23:59
         if ($daily_log[sizeof($daily_log) - 1]['new_status'] === "Running") {
             $tmp = $daily_log[$i]['pr_name'] . '/' . $daily_log[$i]['t_name'];
             array_push($result, ['name' => $tmp, "fromDate" => $daily_log[sizeof($daily_log) - 1]['date'] . " " . $daily_log[sizeof($daily_log) - 1]['time'], "toDate" => $daily_log[sizeof($daily_log) - 1]['date'] . ' 23:59:59']);
         }
-        break;
+        //break;
+        if (!empty($result)) {
+            array_push($all_logs, $result);
+            $result = array();
+        }
     }
     //echo '<pre>' . toJSON("name", "fromDate", "toDate", $name, $fromDate, $toDate) . '</pre>';
-    echo "<pre>", json_encode($result, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES), "</pre>";
+    echo "<pre>", json_encode($all_logs, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES), "</pre>";
 } catch (Exception $e) {
     //throw $th;
     echo $e;

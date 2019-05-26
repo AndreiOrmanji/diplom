@@ -22,13 +22,14 @@ try{
     if ( isset($_POST['submit']) && ($_SESSION["id"]!=NULL) ) {
         //echo '<pre>'.var_dump($_POST['submit']).'</pre>';
         $task = R::dispense ('tasks');
-        $task->user_id = $_SESSION["id"];
+        $piece = explode(".",$_POST['user_id']);
+        $task->user_id = $piece[0];
         $piece = explode(".",$_POST['prname']);                                     //user id
-        $task->project_id = ($piece[0]==='Choose from existing projects') ? 0 : $piece[0];    //project name
+        $task->project_id = ($piece[0]==='Choose from existing projects') ? 1 : $piece[0];    //project name
         $task->t_name = $_POST['tname'];                                         //task name
         $task->t_desc = $_POST['tdesc'];                                         //description
-        $task->is_billable = (isset($_POST['is_billable']))?1:0;                 //is billable
-        $task->price=$_POST['price'];
+        // $task->is_billable = (isset($_POST['is_billable']))?1:0;                 //is billable
+        // $task->price=$_POST['price'];
         $task->t_created=time();  
         //task created
         $task->t_finished=NULL;                                                  //task finished
@@ -39,7 +40,7 @@ try{
         $task->t_resumed = NULL;
         $task_id = R::store( $task );
         $task = R::load( 'tasks', $task_id);
-        $logRecord = R::dispense ('logs_tasks_created_finished');
+        $logRecord = R::dispense ('createdlog');
         $logRecord->user_id = $task['user_id'];
         $logRecord->task_id = $task['id'];
         $logRecord->project_id = $task['project_id'];
@@ -62,5 +63,6 @@ try{
 catch(Exception $e){
     echo '<div style = "color:red;">'."Task failed!".'</div><hr>';
     var_dump($task);
+    print_r($piece);
     echo "$e";
 }

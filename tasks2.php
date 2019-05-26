@@ -108,6 +108,25 @@ function secConvert($seconds)
                             <textarea id="tdesc" class="form-control" name="tdesc" rows="4" placeholder="Optional"
                                 value=""></textarea>
                         </div>
+                        
+                        <div class="form-group">
+                            <label for="user_id">Assign to:</label>
+                            <?php
+                                $users_to_assign = R::find('users', 'dept_id=? AND id<>?', [$_SESSION["dept_id"],$_SESSION["id"]]);
+                                if (empty($users_to_assign)) {
+                                    echo 'No users to assign to...';
+                                } else {
+                                    echo '<select name="user_id">
+                                <option selected="selected">'.$_SESSION['id'] . '. ' . $_SESSION['email'] .'</option>';
+                                    foreach ($users_to_assign as $usr) {
+                                        echo '<option>' . $usr['id'] . '. ' . $usr['email'] . '</option>';
+                                    }
+                                    echo '</select>';
+                                }
+                                ?>
+                        </div>
+
+                        <!-- 
                         <div class="form group form-check form-check-inline form-control">
                             <label class="form-check-label form-control" for="trigger">Is billable?</label>
                             <input class="form-check-input form-control" type="checkbox" id="trigger"
@@ -119,6 +138,7 @@ function secConvert($seconds)
                             <label id="hidden_field" class="form-control" for="hidden_field">$ per
                                 hour</label>
                         </div>
+                         -->
                         <div class="container">
                             <button id="button" class="btn btn-success btn-block" name="submit" type="submit">Create
                                 task!</button>
@@ -566,11 +586,21 @@ function secConvert($seconds)
                     let status = document.getElementsByClassName('tasks_status');
                     let ctrlBtns = document.getElementsByClassName("ctrl_btn");
                     let tFinished = document.getElementsByClassName('task_finished');
+                    let tPaused = document.getElementsByClassName('task_paused');
                     //change status  to Finished and save timestamps
-                    tFinished[i].innerHTML = currentTime("finished_timestamp");
-                    status[i].innerHTML = 'Finished';
-                    convertStatus(i);
 
+                    if (status[i].innerHTML==="Running"){
+                        status[i].innerHTML = 'Paused';
+                        convertStatus(i);
+                        tPaused[i].innerHTML = currentTime("paused_timestamp");
+                        logs = createLog(i, 'Paused');
+                        doSyncLog();
+
+                    }
+
+                    status[i].innerHTML = 'Finished';
+                    tFinished[i].innerHTML = currentTime("finished_timestamp");
+                    convertStatus(i);
                     logs = createLog(i, 'Finished');
                     doSyncLog();
 
@@ -653,7 +683,6 @@ function secConvert($seconds)
         // Get the form fields and hidden div
         var checkbox = $("#trigger");
         var hidden = $("#hidden_field");
-        var populate = $("#populate");
         var hidden1 = $("#hidden_field1");
 
         // Hide the fields.

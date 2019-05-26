@@ -299,9 +299,9 @@ try {
     <?= "You are not autorized. Go to <a href=\"./login\">Login Page.</a> "; ?>
     <?php endif; ?>
     <!-- Resources -->
-    <script src="https://www.amcharts.com/lib/4/core.js"></script>
-    <script src="https://www.amcharts.com/lib/4/charts.js"></script>
-    <script src="https://www.amcharts.com/lib/4/themes/animated.js"></script>
+    <script src="./libs/core.js"></script>
+    <script src="./libs/charts.js"></script>
+    <script src="./libs/themes/animated.js"></script>
 
     <script src="./libs/jquery-3.3.1.min.js"></script>
     <script src="./libs/popper.min.js"
@@ -489,7 +489,7 @@ try {
         series.dataFields.valueY = "seconds";
         series.dataFields.categoryX = "days";
         series.columns.template.tooltipText = "{categoryX}: {valueY.formatDuration()}";
-        chart.durationFormatter.durationFormat = "hh 'h:' mm 'm'";
+        chart.durationFormatter.durationFormat = "hh 'h:' mm 'm:' ss 's'";
         var bullet = series.bullets.push(new am4charts.LabelBullet());
         bullet.label.text = "{valueY.formatDuration()}";
         bullet.label.verticalCenter = "bottom";

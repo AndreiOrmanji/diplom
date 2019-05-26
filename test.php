@@ -87,8 +87,103 @@
         "name": "Test Project/2ndCreatedTask",
         "fromDate": "2019-04-29 17:36:08",
         "toDate": "2019-04-29 17:38:20"
+    },
+    {
+        "name": "Others tasks/2ndTask",
+        "fromDate": "2019-04-30 11:25:22",
+        "toDate": "2019-04-30 12:00:43"
+    },
+    {
+        "name": "Others tasks/1st task",
+        "fromDate": "2019-04-30 12:15:36",
+        "toDate": "2019-04-30 23:59:59"
+    },
+    {
+        "name": "Others tasks/1st task",
+        "fromDate": "2019-05-04 00:00:00",
+        "toDate": "2019-05-04 10:43:57"
+    },
+    {
+        "name": "Others tasks/2ndTask",
+        "fromDate": "2019-05-04 11:00:17",
+        "toDate": "2019-05-04 21:42:10"
+    },
+    {
+        "name": "Test Project/2ndCreatedTask",
+        "fromDate": "2019-05-04 10:45:03",
+        "toDate": "2019-05-04 10:45:33"
+    },
+    {
+        "name": "Test Project/2ndCreatedTask",
+        "fromDate": "2019-05-04 21:50:42",
+        "toDate": "2019-05-04 22:03:42"
+    },
+    {
+        "name": "Test Project/2ndCreatedTask",
+        "fromDate": "2019-05-04 22:09:23",
+        "toDate": "2019-05-04 23:59:59"
+    },
+    {
+        "name": "Test Project/2ndCreatedTask",
+        "fromDate": "2019-05-05 00:00:00",
+        "toDate": "2019-05-05 00:34:10"
+    },
+    {
+        "name": "Test Project/2ndCreatedTask",
+        "fromDate": "2019-05-05 00:35:04",
+        "toDate": "2019-05-05 00:37:33"
+    },
+    {
+        "name": "Test Project/2ndCreatedTask",
+        "fromDate": "2019-05-05 19:26:15",
+        "toDate": "2019-05-05 23:21:26"
+    },
+    {
+        "name": "Test Project/1stCreatedTask",
+        "fromDate": "2019-05-05 23:33:58",
+        "toDate": "2019-05-05 23:59:59"
+    },
+    {
+        "name": "Diplom/prepare",
+        "fromDate": "2019-05-09 16:55:05",
+        "toDate": "2019-05-09 17:05:07"
+    },
+    {
+        "name": "Diplom/prepare",
+        "fromDate": "2019-05-09 17:05:49",
+        "toDate": "2019-05-09 21:41:39"
+    },
+    {
+        "name": "Diplom/prepare",
+        "fromDate": "2019-05-10 00:40:59",
+        "toDate": "2019-05-10 00:41:01"
+    },
+    {
+        "name": "Diplom/prepare",
+        "fromDate": "2019-05-10 17:04:40",
+        "toDate": "2019-05-10 18:43:09"
+    },
+    {
+        "name": "Others tasks/2ndTask",
+        "fromDate": "2019-05-23 08:33:11",
+        "toDate": "2019-05-23 08:35:52"
+    },
+    {
+        "name": "Others tasks/2ndTask",
+        "fromDate": "2019-05-23 08:36:58",
+        "toDate": "2019-05-23 08:37:02"
+    },
+    {
+        "name": "Others tasks/2ndTask",
+        "fromDate": "2019-05-23 08:43:25",
+        "toDate": "2019-05-23 08:43:26"
+    },
+    {
+        "name": "Test Project/2ndCreatedTask",
+        "fromDate": "2019-05-23 08:37:06",
+        "toDate": "2019-05-23 08:37:09"
     }
-        ];
+];
 
         var categoryAxis = chart.yAxes.push(new am4charts.CategoryAxis());
         categoryAxis.dataFields.category = "name";
@@ -106,8 +201,8 @@
             var parts =dateFrom[0].split('-');
             var dateParsed = new Date(parts[0], parts[1] - 1, parts[2],0,0,0); 
             //console.log(dateParsed.toDateString());
-        dateAxis.max = new Date(parts[0], parts[1] - 1, parts[2],23,59,59).getTime();
-        dateAxis.min = new Date(parts[0], parts[1] - 1, parts[2],0,0,0).getTime();
+        // dateAxis.max = new Date(parts[0], parts[1] - 1, parts[2],23,59,59).getTime();
+        // dateAxis.min = new Date(parts[0], parts[1] - 1, parts[2],0,0,0).getTime();
         dateAxis.strictMinMax = false;
         dateAxis.renderer.tooltipLocation = 0;
 

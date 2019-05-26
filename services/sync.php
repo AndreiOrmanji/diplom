@@ -5,7 +5,7 @@ $data = $_POST['data'];
 //print_r($data);
 try{
         if ($data["newStatus"]==="Finished"){
-            $logRecord = R::dispense('logs_tasks_created_finished');
+            $logRecord = R::dispense('createdlog');
         }
         else{
             $logRecord = R::dispense('logs');
