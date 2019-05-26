@@ -35,7 +35,7 @@ function getLogs()
     return R::getAll('SELECT a.id, a.project_id, b.pr_name, a.task_id, c.t_name, a.new_status, a.time, a.date FROM logs a, projects b, tasks c WHERE a.project_id = b.id AND a.task_id = c.id  AND a.user_id = ?', [$_SESSION['id']]);
 }
 
-function toJSON($label1, $label2, $label3, $arr1, $arr2, $arr3)
+function toJSON($label1, $label2, $arr1, $arr2)
 {
     for ($i = 0; $i < sizeof($arr1); $i++) {
         # code...
@@ -90,6 +90,16 @@ try {
     }
     //echo '<pre>' . toJSON("name", "fromDate", "toDate", $name, $fromDate, $toDate) . '</pre>';
     echo "<pre>", json_encode($all_logs, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES), "</pre>";
+    //echo strtotime("now");
+    $labelsXweek = array();
+    $dayToCompare = date('Y-m-d', strtotime("now"));
+    for ($i = 0; $i < 7; $i++) {
+        array_push($labelsXweek,$dayToCompare);
+            if ($i===6) continue;
+            $dayToCompare = date('Y-m-d', strtotime("-1 day", strtotime($dayToCompare)));
+    }
+    //print_r($labelsXweek);
+    //echo toJSON("days", "seconds", $labelsXweek, [0,0,0,0,0,0,0]);
 } catch (Exception $e) {
     //throw $th;
     echo $e;

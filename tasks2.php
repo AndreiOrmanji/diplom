@@ -114,7 +114,7 @@ function secConvert($seconds)
                             <?php
                                 $users_to_assign = R::find('users', 'dept_id=? AND id<>?', [$_SESSION["dept_id"],$_SESSION["id"]]);
                                 if (empty($users_to_assign)) {
-                                    echo 'No users to assign to...';
+                                    echo 'No users in department...';
                                 } else {
                                     echo '<select name="user_id">
                                 <option selected="selected">'.$_SESSION['id'] . '. ' . $_SESSION['email'] .'</option>';
@@ -305,6 +305,11 @@ function secConvert($seconds)
                         echo '   <div class="btn-group">
                         <button name="startButton' . $t["id"] . '" type="button" class="ctrl_btn modify-btn btn btn-info btn-sm">Continue</button>
                         <button name="finishButton' . $t["id"] . '" type="button" class="end_btn modify-btn btn btn-secondary btn-sm">Finish</button>
+                        </div>';
+                    }else{//style="display: none"
+                        echo '   <div class="btn-group">
+                        <button name="startButton' . $t["id"] . '" type="button" class="ctrl_btn modify-btn btn btn-info btn-sm" style="display: none">Continue</button>
+                        <button name="finishButton' . $t["id"] . '" type="button" class="end_btn modify-btn btn btn-secondary btn-sm" style="display: none">Finish</button>
                         </div>';
                     }
                     echo '
