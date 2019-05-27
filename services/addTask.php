@@ -24,6 +24,7 @@ try{
         $task = R::dispense ('tasks');
         $piece = explode(".",$_POST['user_id']);
         $task->user_id = $piece[0];
+        if ($_SESSION["id"]!=$task->user_id) $task->assigned=1;
         $piece = explode(".",$_POST['prname']);                                     //user id
         $task->project_id = ($piece[0]==='Choose from existing projects') ? 1 : $piece[0];    //project name
         $task->t_name = $_POST['tname'];                                         //task name

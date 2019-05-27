@@ -60,12 +60,12 @@ if (isset($_POST['submit'])) {
 
 <body>
     <a href="/">Main Page</a><br>
-    <? if($_SESSION["email"]) : ?>
-    <?="    You are autorized as ".$_SESSION['email'].".<br>    Go to <a href=\"/user\">Settings</a>, if you want to change something.";?>
+    <?php if($_SESSION["email"]) : ?>
+    <?=" You are autorized as ".$_SESSION['email'].".<br>    Go to <a href=\"/user\">Settings</a>, if you want to change something.";?>
     <?php 
     
     ?>
-    <? else : ?>
+    <?php else : ?>
     <form id="loginForm" class="form-horizontal container" action="./login" method="POST">
         <div class="input-group col-sm-4">
             <span class="input-group-addon"><i class="glyphicon glyphicon-envelope"></i></span>
@@ -82,7 +82,7 @@ if (isset($_POST['submit'])) {
             </div>
         </div>
     </form>
-    <? endif; ?>
+    <?php endif; ?>
 </body>
 
 </html>
