@@ -1,17 +1,25 @@
 <?php
 use Twig\Error\Error;
 
+if (isset($_POST['submit'])) {
+    $piece = explode(".", $_POST['user_id'], 2);
+    $_SESSION['graph_id'] = $piece[0];
+    $_SESSION['graph_email'] = $piece[1];
+}
+
 
 
 require_once './db.php';
 
 function getTasksID()
 {
+    //return R::getAll('SELECT DISTINCT task_id, project_id FROM logs WHERE user_id=? ORDER BY project_id', [$_SESSION['graph_id']]);
+    //return $array = print_r($array);
     return R::getAll('SELECT DISTINCT a.task_id, a.project_id, b.pr_name, c.t_name FROM logs a, projects b, tasks c WHERE a.project_id = b.id AND a.task_id = c.id  AND a.user_id = ? ORDER BY a.project_id', [$_SESSION['graph_id']]);
 }
 function getWeekDays($firstDay, $lastDay)
 {
-    return R::getCol('SELECT DISTINCT date FROM logs WHERE user_id = ? AND date >= ? AND date <= ? ORDER BY date',  [ $_SESSION['graph_id'], $firstDay, $lastDay]);
+    return R::getCol('SELECT DISTINCT date FROM logs WHERE user_id = ? AND date >= ? AND date <= ? ORDER BY date',  [$_SESSION['graph_id'], $firstDay, $lastDay]);
 }
 function getProjects()
 {
@@ -37,25 +45,12 @@ function toJSON($label1, $label2, $arr1, $arr2)
 
 
 try {
-    if (isset($_POST['submit'])) {
-        $piece = explode(".", $_POST['user_id'], 2);
-        $_SESSION['graph_id'] = $piece[0];
-        $_SESSION['graph_email'] = $piece[1];
-        if (!isset($_SESSION['graph_id'])) {
-            $_SESSION['graph_id'] = $_SESSION["id"];
-            $_SESSION['graph_email'] = $_SESSION["email"];
-        }
-    }
-    
-    //print_r($_SESSION);
     $userTasks = getTasksID(); //уникальные записи о задачах 1, 2, 3
     $labelsYallTasks = array();
     for ($i = 0; $i < sizeof($userTasks); $i++) {
         $temp = 0;
         $logs = R::find('logs', ' user_id = ? ',  [$_SESSION['graph_id']]);
-        //print_r($logs->export());
-        //print_r($userTasks[0]['task_id']);
-        for ($j = 0; $j < sizeof($logs)-1; $j++) {
+        for ($j = 0; $j < sizeof($logs); $j++) {
             if ($logs[$j]['task_id'] === $userTasks[$i]['task_id'] && ($logs[$j]['new_status'] === 'Running')) {
                 if ($logs[$j + 1]['task_id'] === $userTasks[$i]['task_id']) {
                     $temp += ($logs[$j + 1]['timestamp'] - $logs[$j]['timestamp']);
@@ -80,7 +75,7 @@ try {
     for ($i = 0; $i < sizeof($projects); $i++) {
         $temp = 0;
         $logs = R::find('logs', ' user_id = ? ',  [$_SESSION['graph_id']]);
-        for ($j = 0; $j < sizeof($logs)-1; $j++) {
+        for ($j = 0; $j < sizeof($logs); $j++) {
             if (($logs[$j]['project_id'] === $projects[$i]['project_id']) && ($logs[$j]['new_status'] === 'Running')) {
                 if (($logs[$j + 1]['project_id'] === $projects[$i]['project_id'])) {
                     $temp += ($logs[$j + 1]['timestamp'] - $logs[$j]['timestamp']);
@@ -105,29 +100,24 @@ try {
     $firstDay =  date("Y-m-d", strtotime('-6 day')); //Monday this week
     $lastDay =  date("Y-m-d", strtotime('now')); //Sunday this week
     $logWeek = R::find('logs', ' user_id = ? AND date >= ? AND date <= ?',  [$_SESSION['graph_id'], $firstDay, $lastDay]);
-    //echo '<pre>'.print_r($logWeek).'</pre>';
     $TasksID = getTasksID(); //уникальные записи о задачах 1, 2, 3
-    // echo '<pre>'.print_r($TasksID).'</pre>';
     $wDays = getWeekDays($firstDay, $lastDay);
     $labelsYweek = array();
     $dayToCompare = $firstDay;
     //echo $dayToCompare . "</br>";
     for ($i = 0; $i < 7; $i++) {
         $temp = 0;
-        $logWeek = R::find('logs', ' user_id = ? AND date >= ? AND date <= ? order by date',  [$_SESSION['graph_id'], $firstDay, $lastDay]);
-        for ($j = 0; $j < sizeof($logs)-1; $j++) {
+        $logWeek = R::find('logs', ' user_id = ? AND date >= ? AND date <= ?',  [$_SESSION['graph_id'], $firstDay, $lastDay]);
+        for ($j = 0; $j < sizeof($logs); $j++) {
             if (($logs[$j]['date'] === $dayToCompare) && ($logs[$j]['new_status'] === 'Running')) {
                 if (($logs[$j + 1]['date'] === $dayToCompare)) {
-                    //print_r($logs[$j]);
-                    //print_r($logs[$j+  1]);
+                    // print_r($logs[$j]->export());
+                    // print_r($logs[$j+1]->export());
                     $temp += ($logs[$j + 1]['timestamp'] - $logs[$j]['timestamp']);
                     //echo $dayToCompare.': '.$logs[$j]['t_name'].': '.$temp.'</br>';                  
                 }
             }
         }
-        // if ($logs[sizeof($logs)-1]['new_status']=== 'Running'){
-        //     $temp += (strtotime($logs[sizeof($logs)-1]['date']." 23:59:59") - strtotime($logs[sizeof($logs)-1]['date']." ".$logs[sizeof($logs)-1]['time']));
-        // }
         if ($i < 6) $dayToCompare = date('Y-m-d', strtotime("+1 day", strtotime($dayToCompare)));
         // $tmpDayToCompare = '"' . $dayToCompare . '"';
         // array_push($labelsXweek,$tmpDayToCompare);
@@ -135,7 +125,7 @@ try {
         //var_dump($labelsXweek);
     }
     $labelsXweek = array();
-    $dayToCompare = date('Y-m-d', strtotime("-6 day",strtotime("now")));
+    $dayToCompare = date('Y-m-d', (strtotime("-6 day")));
     for ($i = 0; $i < 7; $i++) {
         $tmpDayToCompare = '"' . $dayToCompare . '"';
         array_push($labelsXweek, $tmpDayToCompare);
@@ -225,33 +215,33 @@ try {
 <body>
     <a href="./">Main Page</a><br>
     <?php if ($_SESSION['email']) : ?>
-        <?= '<div class="container">You are using ' . $_SESSION['email'] . ' as your e-mail adress.('.$_SESSION['is_head'].')</div>'; ?>
+        <?= '<div class="container">You are using ' . $_SESSION['email'] . ' as your e-mail adress.'.$_SESSION['is_head'].'</div>'; ?>
 
         <?php
         try {
             $timeNow = time();
-            echo '<div class="container">Entered at: ' . date("H:i:s", time()) . '(' . time() . ')</div>
+            echo '<div class="container">Tracking starts at ' . date("H:i:s", time()) . '(' . time() . ')</div>
                     <div>Current Time: <span id="current_time"></span></div>';
-            if ($_SESSION['is_head'] === "1") {
-                echo
-                    '<form id="contactForm" action="./graph3" method="post">
-                    <div class="form-group">
-                <label for="user_id">Show statistics of:</label></br>';
-                $users_to_assign = R::find('users', 'dept_id=? AND id<>?', [$_SESSION["dept_id"], $_SESSION['graph_id']]);
-                //$users_to_assign = R::find('users', 'dept_id=?', [$_SESSION["dept_id"]]);
-                if (empty($users_to_assign)) {
-                    echo 'No users in department...';
-                } else {
-                    echo '<select name="user_id" class="custom-select col-sm-2">
-                    <option selected="selected">' . $_SESSION['graph_id'] . '. ' . $_SESSION['graph_email'] . '</option>';
-                    foreach ($users_to_assign as $usr) {
-                        echo '<option>' . $usr['id'] . '. ' . $usr['email'] . '</option>';
+                    if ($_SESSION['is_head'] === "1") {
+                        echo
+                            '<form id="contactForm" action="./graph4" method="post">
+                            <div class="form-group">
+                        <label for="user_id">Show statistics of:</label></br>';
+                        $users_to_assign = R::find('users', 'dept_id=? AND id<>?', [$_SESSION["dept_id"], $_SESSION['graph_id']]);
+                        //$users_to_assign = R::find('users', 'dept_id=?', [$_SESSION["dept_id"]]);
+                        if (empty($users_to_assign)) {
+                            echo 'No users in department...';
+                        } else {
+                            echo '<select name="user_id" class="custom-select col-sm-2">
+                            <option selected="selected">' . $_SESSION['graph_id'] . '. ' . $_SESSION['graph_email'] . '</option>';
+                            foreach ($users_to_assign as $usr) {
+                                echo '<option>' . $usr['id'] . '. ' . $usr['email'] . '</option>';
+                            }
+                            echo '</select>';
+                        }
+                        echo '<button id="button" class="container col-sm-2 btn btn-success btn-block" name="submit" type="submit">OK!</button></div>
+                        </form>';
                     }
-                    echo '</select>';
-                }
-                echo '<button id="button" class="container col-sm-2 btn btn-success btn-block" name="submit" type="submit">OK!</button></div>
-                </form>';
-            }
             $logs = getLogs(); //R::find('logs', ' user_id = ? ',  [$_SESSION['graph_id']]);
             //echo print_r($logs);
             if (empty($logs)) echo "No activity by " . $_SESSION['graph_email'] . ".";
@@ -260,7 +250,7 @@ try {
                 <div class="container">
                 <details>
                 <summary>Tables for ' . $_SESSION['graph_email'] . '</summary>';
-                $activity_date = R::getCol('SELECT DISTINCT date FROM logs where user_id=?',[$_SESSION['graph_id']]);
+                $activity_date = R::getCol('SELECT DISTINCT date FROM logs');
                 // foreach ($activity_date as $day){
                 //     $logs = R::find( 'logs', ' user_id = ? and date = ?',  [$_SESSION['graph_id'],$date]);
                 //     echo '<script>console.log('.print_r($logs->export()).');</script>';
@@ -301,27 +291,6 @@ try {
                             </table></details>';
                 }
                 echo '</details></div>';
-                echo '<div class="container-fluid">
-            <div class="row">
-                <div class="col-md-6">
-                    <div id="pie-chart-all-tasks">
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div id="pie-chart-all-projects">
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div id="bar-chart-by-week">
-                    </div>
-                </div>
-
-                <div class="col-md-6">
-                    <div id="bar-chart-by-pauses">
-                    </div>
-                </div>
-            </div>
-        </div>';
             }
         } catch (Exception $e) {
             //echo '<div style = "color:red;">'."Task failed!".'</div><hr>';
@@ -330,7 +299,27 @@ try {
         }
         ?>
 
-        
+        <div class="container-fluid">
+            <div class='row'>
+                <div class='col-md-6'>
+                    <div id="pie-chart-all-tasks">
+                    </div>
+                </div>
+                <div class='col-md-6'>
+                    <div id="pie-chart-all-projects">
+                    </div>
+                </div>
+                <div class='col-md-6'>
+                    <div id="bar-chart-by-week">
+                    </div>
+                </div>
+
+                <div class='col-md-6'>
+                    <div id="bar-chart-by-pauses">
+                    </div>
+                </div>
+            </div>
+        </div>
     <?php else : ?>
         <?= "You are not autorized. Go to <a href=\"./login\">Login Page.</a> "; ?>
     <?php endif; ?>
@@ -370,7 +359,8 @@ try {
             chart.innerRadius = am4core.percent(50);
 
             // Force global duration format
-            chart.durationFormatter.durationFormat = "hh 'h:' mm 'm:' ss 's'";
+            //chart.durationFormatter.durationFormat = "hh 'h:' mm 'm'"; //:' ss  ";
+            chart.durationFormatter.durationFormat = "hh 'h:' mm 'm:' ss 's' ";
 
             // Add and configure Series
             var pieSeries = chart.series.push(new am4charts.PieSeries());
@@ -429,7 +419,7 @@ try {
             chart.innerRadius = am4core.percent(50);
 
             // Force global duration format
-            chart.durationFormatter.durationFormat = "hh 'h:' mm 'm'  "; //:' ss  ";
+            chart.durationFormatter.durationFormat = "hh 'h:' mm 'm:' ss 's' ";
 
             var title = chart.titles.create();
             title.text = "All projects stats";
@@ -489,7 +479,8 @@ try {
             bullet.label.verticalCenter = "bottom";
             //bullet.label.dy = -10;
             //bullet.label.fontSize = 20;
-            chart.durationFormatter.durationFormat = "hh 'h:' mm 'm'";
+            //chart.durationFormatter.durationFormat = "hh 'h:' mm 'm'";
+            chart.durationFormatter.durationFormat = "hh 'h:' mm 'm'";//:' ss 's' ";
 
             chart.maskBullets = false;
 
@@ -523,7 +514,7 @@ try {
             series.dataFields.valueY = "seconds";
             series.dataFields.categoryX = "days";
             series.columns.template.tooltipText = "{categoryX}: {valueY.formatDuration()}";
-            chart.durationFormatter.durationFormat = "hh 'h:' mm 'm:' ss 's'";
+            chart.durationFormatter.durationFormat = "hh 'h:' mm 'm'";//:' ss 's'";
             var bullet = series.bullets.push(new am4charts.LabelBullet());
             bullet.label.text = "{valueY.formatDuration()}";
             bullet.label.verticalCenter = "bottom";

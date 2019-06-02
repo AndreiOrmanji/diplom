@@ -18,6 +18,8 @@ if (isset($_POST['submit'])) {
                 $_SESSION["is_admin"] = $user['is_admin'];
                 $_SESSION["is_head"] = $user['is_head'];
                 $_SESSION["dept_id"] = $user['dept_id'];
+                $_SESSION["graph_id"] = $user['id'];
+                $_SESSION["graph_email"] = $user['email'];
                 header("Location: ./");
                 //echo $_SESSION["email"];
                 //echo "Session variables are set.";

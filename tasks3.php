@@ -1,6 +1,12 @@
 <?php
 require_once './db.php';
 
+if (isset($_POST['submit'])) {
+    $piece = explode(".", $_POST['user_id'], 2);
+    $_SESSION['graph_id'] = $piece[0];
+    $_SESSION['graph_email'] = $piece[1];
+}
+
 function current_time($tResumed)
 {
     if (($tResumed === NULL) || ($tResumed === 0) || ($tResumed === "")) {
@@ -61,11 +67,34 @@ function secConvert($seconds)
     <?php if ($_SESSION['email']) : ?>
     <?= "You are using, " . $_SESSION['email'] . " as your e-mail adress."; ?>
     
-    <div class="container">
+    <div class="container col-sm-12">
         <div class="my-5 mx-auto text-center">
             <!--<button class="btn btn-dark btn-lg" data-toggle="modal" data-target="#exampleModal">Открыть модальное окно</button>-->
-            <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#exampleModal">Create new
-                task!</button>
+            <?php 
+                if ($_SESSION['is_head'] === "1") {
+                    echo
+                        '<form id="contactForm" action="./tasks3" method="post">
+                        <div class="form-group">
+                    <label for="user_id">Show tasks of:</label></br>';
+                    $users_to_assign = R::find('users', 'dept_id=? AND id<>?', [$_SESSION["dept_id"], $_SESSION['graph_id']]);
+                    //$users_to_assign = R::find('users', 'dept_id=?', [$_SESSION["dept_id"]]);
+                    if (empty($users_to_assign)) {
+                        echo 'No users in department...';
+                    } else {
+                        echo '<select name="user_id" class="custom-select col-sm-2">
+                        <option selected="selected">' . $_SESSION['graph_id'] . '. ' . $_SESSION['graph_email'] . '</option>';
+                        foreach ($users_to_assign as $usr) {
+                            echo '<option>' . $usr['id'] . '. ' . $usr['email'] . '</option>';
+                        }
+                        echo '</select>';
+                    }
+                    echo '<button id="button" class="container col-sm-2 btn btn-success btn-block" name="submit" type="submit">OK!</button></div>
+                    </form>';
+                } 
+                if($_SESSION['id']===$_SESSION['graph_id']) echo '<button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#exampleModal">Create new
+                task!</button>';
+            ?>
+            
         </div>
     </div>
     <!-- Modal -->
@@ -113,12 +142,12 @@ function secConvert($seconds)
                         <div class="form-group">
                             <label for="user_id">Assign to:</label>
                             <?php
-                                $users_to_assign = R::find('users', 'dept_id=? AND id<>?', [$_SESSION["dept_id"],$_SESSION["id"]]);
+                                $users_to_assign = R::find('users', 'dept_id=? AND id<>?', [$_SESSION["dept_id"],$_SESSION['graph_id']]);
                                 if (empty($users_to_assign)) {
                                     echo 'No users in department...';
                                 } else {
                                     echo '<select name="user_id">
-                                <option selected="selected">'.$_SESSION['id'] . '. ' . $_SESSION['email'] .'</option>';
+                                <option selected="selected">'.$_SESSION['graph_id'] . '. ' . $_SESSION['graph_email'] .'</option>';
                                     foreach ($users_to_assign as $usr) {
                                         echo '<option>' . $usr['id'] . '. ' . $usr['email'] . '</option>';
                                     }
@@ -126,20 +155,6 @@ function secConvert($seconds)
                                 }
                                 ?>
                         </div>
-
-                        <!-- 
-                        <div class="form group form-check form-check-inline form-control">
-                            <label class="form-check-label form-control" for="trigger">Is billable?</label>
-                            <input class="form-check-input form-control" type="checkbox" id="trigger"
-                                name="is_billable">
-                        </div>
-                        <div id="hidden_field" class="form-group">
-                            <input id="hidden_field1" class="form-control" name="price" type="text"
-                                pattern="/^((\d{1,3}|\s*){1})((\,\d{3}|\d)*)(\s*|\.(\d{1,2}))$" />
-                            <label id="hidden_field" class="form-control" for="hidden_field">$ per
-                                hour</label>
-                        </div>
-                         -->
                         <div class="container">
                             <button id="button" class="btn btn-success btn-block" name="submit" type="submit">Create
                                 task!</button>
@@ -248,31 +263,12 @@ function secConvert($seconds)
         $timeNow = time();
         echo '<div>Tracking starts at ' . date("H:i:s", time()) . '(' . time() . ')</div>';
         echo '<div>Current Time: <span id="current_time"></span></div>';
-        if ($_SESSION['is_head'] === "1") {
-            echo
-                '<form id="contactForm" action="./graph3" method="post">
-                <div class="form-group">
-            <label for="user_id">Show statistics of:</label></br>';
-            $users_to_assign = R::find('users', 'dept_id=? AND id<>?', [$_SESSION["dept_id"], $_SESSION["graph_id"]]);
-            //$users_to_assign = R::find('users', 'dept_id=?', [$_SESSION["dept_id"]]);
-            if (empty($users_to_assign)) {
-                echo 'No users in department...';
-            } else {
-                echo '<select name="user_id" class="custom-select col-sm-2">
-                <option selected="selected">' . $_SESSION["graph_id"] . '. ' . $_SESSION["graph_email"] . '</option>';
-                foreach ($users_to_assign as $usr) {
-                    echo '<option>' . $usr['id'] . '. ' . $usr['email'] . '</option>';
-                }
-                echo '</select>';
-            }
-            echo '<button id="button" class="container col-sm-2 btn btn-success btn-block" name="submit" type="submit">OK!</button></div>
-            </form>';
-        }
 
         if (empty($user_projects)) echo "No projects were assigned.";
         else {
             foreach ($user_projects as $project) {
-                $user_tasks = R::find('tasks', ' user_id = ? AND project_id = ? ',  [$_SESSION['id'], $project["id"]]);
+                $user_tasks = R::find('tasks', ' user_id = ? AND project_id = ? ',  [$_SESSION['graph_id'], $project["id"]]);
+                if (empty($user_tasks)) continue;
                 echo '
                 <div class="container">
                 <details open>
@@ -404,7 +400,7 @@ function secConvert($seconds)
         for (let index = 0; index < tName.length; index++) {
             sendData.push({
                 "id": id[index].innerHTML,
-                "userId": '<?php echo $_SESSION['id'] ?>',
+                "userId": '<?php echo $_SESSION['graph_id'] ?>',
                 "projectId": projectId[index].innerHTML,
                 "prName": prName[index].innerHTML,
                 "tName": tName[index].innerHTML,
@@ -489,7 +485,7 @@ function secConvert($seconds)
         }
 
         let logRecord = {
-            "user_id": '<?php echo $_SESSION['id'] ?>',
+            "user_id": '<?php echo $_SESSION['graph_id'] ?>',
             "task_id": task_id[id].innerHTML,
             "project_id": projectId[id].innerHTML,
             //"prName": prName[id].innerHTML,

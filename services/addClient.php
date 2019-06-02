@@ -23,7 +23,7 @@ try {
         //echo '<pre>'.var_dump($_POST['submit']).'</pre>';
         $client = R::dispense('clients');
         $client->user_id = $_SESSION["id"];
-        $client->client_name = $_POST['client_name'];
+        $client->client_name = $_POST['client_name_1'];
         $client->email = $_POST['email'];
         $client->phone = $_POST['phone'];
         $client_id = R::store($client);

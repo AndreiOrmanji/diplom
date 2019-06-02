@@ -50,6 +50,19 @@ function toJSON($label1, $label2, $label3, $arr1, $arr2, $arr3)
 
 
 try {
+
+    if (isset($_POST['submit'])) {
+        $piece = explode(".", $_POST['user_id'], 2);
+        $_SESSION['graph_id'] = $piece[0];
+        $_SESSION['graph_email'] = $piece[1];
+        $date=array($_POST['date_to_check']);
+
+    }
+    if (!isset($_SESSION['graph_id'])) {
+        $_SESSION['graph_id'] = $_SESSION['id'];
+        $_SESSION['graph_email'] = $_SESSION['email'];
+    }
+
     $result = array();
     $name = array();
     $fromDate = array();
@@ -57,8 +70,9 @@ try {
 
     $daily_log = getLogs();
     $byDate=array();
-    
-    $date = R::getCol('SELECT DISTINCT date FROM logs where user_id=?', [$_SESSION['id']]);
+    $activity_date = R::getCol('SELECT DISTINCT date FROM logs where user_id=?',[$_SESSION['graph_id']]);
+    print_r($activity_date);
+    //$date = R::getCol('SELECT DISTINCT date FROM logs where user_id=?', [$_SESSION['id']]);
     // print_r($date);
     // echo sizeof($date);
     // echo $date[0];
@@ -95,7 +109,155 @@ try {
         }
         //break;
     }
-    echo "<pre>", json_encode($result, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES), "</pre>";
+    //echo  trim(json_encode($result, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),"[]");
 } catch (Exception $e) {
     echo $e;
 }
+?>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+        }
+
+        /* #chartdiv,
+    #chartdiv2 {
+        width: 50vw;
+        height: 500px;
+
+    } */
+        #chartdiv {
+            width: 100%;
+            height: 500px;
+        }
+    </style>
+    <title>Document</title>
+    <script src="https://www.amcharts.com/lib/4/core.js"></script>
+    <script src="https://www.amcharts.com/lib/4/charts.js"></script>
+    <script src="https://www.amcharts.com/lib/4/themes/dataviz.js"></script>
+    <script src="https://www.amcharts.com/lib/4/themes/animated.js"></script>
+</head>
+
+<body>
+    <?php 
+        
+        if ($_SESSION['is_head'] === "1") {
+            echo
+                '<form id="contactForm" action="./info2" method="post">
+                <div class="form-group">
+            <label for="user_id">Show statistics of:</label></br>';
+            $users_to_assign = R::find('users', 'dept_id=? AND id<>?', [$_SESSION["dept_id"], $_SESSION['graph_id']]);
+            //$users_to_assign = R::find('users', 'dept_id=?', [$_SESSION["dept_id"]]);
+            if (empty($users_to_assign)) {
+                echo 'No users in department...';
+            } else {
+                echo '<select name="user_id" class="custom-select col-sm-2">
+                <option selected="selected">' . $_SESSION['graph_id'] . '. ' . $_SESSION['graph_email'] . '</option>';
+                foreach ($users_to_assign as $usr) {
+                    echo '<option>' . $usr['id'] . '. ' . $usr['email'] . '</option>';
+                }
+                echo '</select>';
+            }
+            
+        }
+        echo '<label for="user_id">Show statistics of:</label></br>';
+        echo '<select name="date_to_check" class="custom-select col-sm-2">';
+        foreach ($activity_date as $d) {
+            echo '<option>' . $d. '</option>';
+        }
+        echo '</select>';
+        echo '<button id="button" class="container col-sm-2 btn btn-success btn-block" name="submit" type="submit">OK!</button></div>
+            </form>';
+        
+    ?>
+
+    <div id="chartdiv"></div>
+    <script>
+        /**
+         * ---------------------------------------
+         * This demo was created using amCharts 4.
+         * 
+         * For more information visit:
+         * https://www.amcharts.com/
+         * 
+         * Documentation is available at:
+         * https://www.amcharts.com/docs/v4/
+         * ---------------------------------------
+         */
+
+        // Themes begin
+        am4core.useTheme(am4themes_animated);
+        // Themes end
+
+        var chart = am4core.create("chartdiv", am4charts.XYChart);
+        chart.hiddenState.properties.opacity = 0; // this creates initial fade-in
+
+        chart.paddingRight = 30;
+        chart.dateFormatter.inputDateFormat = "yyyy-MM-dd HH:mm";
+
+        var colorSet = new am4core.ColorSet();
+        // colorSet.saturation = 0.4;
+
+        chart.data = [<?php echo  trim(json_encode($result, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),"[]");?>];
+
+        var categoryAxis = chart.yAxes.push(new am4charts.CategoryAxis());
+        categoryAxis.dataFields.category = "name";
+        categoryAxis.renderer.grid.template.location = 0;
+        categoryAxis.renderer.inversed = true;
+
+        var dateAxis = chart.xAxes.push(new am4charts.DateAxis());
+        dateAxis.dateFormatter.dateFormat = "yyyy-MM-dd HH:mm";
+        dateAxis.renderer.minGridDistance = 60;
+        dateAxis.baseInterval = {
+            count: 5,
+            timeUnit: "minute"
+        };
+        let dateFrom = chart.data[0].fromDate.split(" ");
+            var parts =dateFrom[0].split('-');
+            var dateParsed = new Date(parts[0], parts[1] - 1, parts[2],0,0,0); 
+            //console.log(dateParsed.toDateString());
+        // dateAxis.max = new Date(parts[0], parts[1] - 1, parts[2],23,59,59).getTime();
+        // dateAxis.min = new Date(parts[0], parts[1] - 1, parts[2],0,0,0).getTime();
+        dateAxis.strictMinMax = false;
+        dateAxis.renderer.tooltipLocation = 0;
+
+        var series1 = chart.series.push(new am4charts.ColumnSeries());
+        series1.columns.template.width = am4core.percent(80);
+        series1.columns.template.tooltipText = "[font-style: italic]{name}:\n[bold]{openDateX} - {dateX}";
+
+        series1.dataFields.openDateX = "fromDate";
+        series1.dataFields.dateX = "toDate";
+        series1.dataFields.categoryY = "name";
+        series1.columns.template.propertyFields.fill = "color"; // get color from data
+        series1.columns.template.propertyFields.stroke = "color";
+        series1.columns.template.strokeOpacity = 1;
+        // series1.columns.template.adapter.add("fill", (fill, target) => {
+        //             return chart.colors.getIndex(target.dataItem.index * 2);
+        //         });
+
+        chart.scrollbarX = new am4core.Scrollbar();
+
+        var nameArray = [];
+        chart.data.forEach(element => {
+            nameArray.push(element.name);
+            
+        });
+        var uniqueNames = [...new Set(nameArray)];
+        for (let j = 0; j < uniqueNames.length; j++) {
+            for (let i = 0; i < chart.data.length; i++) {
+                if (chart.data[i].name === uniqueNames[j])
+                    chart.data[i].color = chart.colors.getIndex(j * 2);
+            }
+        }
+        //console.log(chart.data);
+    </script>
+
+</body>
+
+</html>

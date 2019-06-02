@@ -35,18 +35,18 @@ function getLogs()
     return R::getAll('SELECT a.id, a.project_id, b.pr_name, a.task_id, c.t_name, a.new_status, a.time, a.date FROM logs a, projects b, tasks c WHERE a.project_id = b.id AND a.task_id = c.id  AND a.user_id = ?', [$_SESSION['id']]);
 }
 
-function toJSON($label1, $label2, $arr1, $arr2)
-{
-    for ($i = 0; $i < sizeof($arr1); $i++) {
-        # code...
-        if ($i === 0) {
-            $str = "\n\t{\n\t\t" . '"' . $label1 . '": ' . '' . $arr1[$i] . ',' . "\n\t\t" . '"' . $label2 . '": ' . '' . $arr2[$i] . ',' . "\n\t\t" . '"' . $label3 . '": ' . '' . $arr3[$i] . "\n\t}";
-        } else {
-            $str = ",\n\t{\n\t\t" . '"' . $label1 . '": ' . '' . $arr1[$i] . ',' . "\n\t\t" . '"' . $label2 . '": ' . '' . $arr2[$i] . ',' . "\n\t\t" . '"' . $label3 . '": ' . '' . $arr3[$i] . "\n\t}";
-        }
-    }
-    return $str;
-}
+// function toJSON($label1, $label2, $arr1, $arr2)
+// {
+//     for ($i = 0; $i < sizeof($arr1); $i++) {
+//         # code...
+//         if ($i === 0) {
+//             $str = "\n\t{\n\t\t" . '"' . $label1 . '": ' . '' . $arr1[$i] . ',' . "\n\t\t" . '"' . $label2 . '": ' . '' . $arr2[$i] . ',' . "\n\t\t" . '"' . $label3 . '": ' . '' . $arr3[$i] . "\n\t}";
+//         } else {
+//             $str = ",\n\t{\n\t\t" . '"' . $label1 . '": ' . '' . $arr1[$i] . ',' . "\n\t\t" . '"' . $label2 . '": ' . '' . $arr2[$i] . ',' . "\n\t\t" . '"' . $label3 . '": ' . '' . $arr3[$i] . "\n\t}";
+//         }
+//     }
+//     return $str;
+// }
 
 
 try {
@@ -88,7 +88,7 @@ try {
             $result = array();
         }
     }
-    //echo '<pre>' . toJSON("name", "fromDate", "toDate", $name, $fromDate, $toDate) . '</pre>';
+    
     echo "<pre>", json_encode($all_logs, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES), "</pre>";
     //echo strtotime("now");
     $labelsXweek = array();
@@ -99,7 +99,7 @@ try {
             $dayToCompare = date('Y-m-d', strtotime("-1 day", strtotime($dayToCompare)));
     }
     //print_r($labelsXweek);
-    //echo toJSON("days", "seconds", $labelsXweek, [0,0,0,0,0,0,0]);
+    
 } catch (Exception $e) {
     //throw $th;
     echo $e;
